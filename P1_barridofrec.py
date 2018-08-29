@@ -78,10 +78,10 @@ pylab.rcParams.update(params)
 
 # Parametros
 fs = 44100 # frecuencia de sampleo en Hz
-frec_ini_hz = 5 # frecuencia inicial de barrido en Hz
-frec_fin_hz = 5 # frecuencia final de barrido en Hz
+frec_ini_hz = 500 # frecuencia inicial de barrido en Hz
+frec_fin_hz = 500 # frecuencia final de barrido en Hz
 steps = 10 # cantidad de pasos del barrido
-duration_sec_send = 1 # duracion de la señal de salida de cada paso en segundos
+duration_sec_send = 0.2 # duracion de la señal de salida de cada paso en segundos
 A = 0.5 # Amplitud de la señal de salida
 
 # Parametros dependientes
@@ -91,7 +91,7 @@ if steps == 1:
 else:
     delta_frec_hz = (frec_fin_hz-frec_ini_hz)/(steps-1) # paso del barrido en Hz
 
-duration_sec_acq = duration_sec_send + 0.2 # duracion de la adquisicón de cada paso en segundos
+duration_sec_acq = duration_sec_send  # duracion de la adquisicón de cada paso en segundos
 
 # Inicia pyaudio
 p = pyaudio.PyAudio()
@@ -131,8 +131,8 @@ frecs_send = np.zeros(steps)   # aqui guardo las frecuencias
 
 def producer(steps, delta_frec):
     global producer_exit
-    i = 0
-    while(i<steps):
+
+    for i in range(steps):
         f = frec_ini_hz + delta_frec_hz*i
 
         ## Seno
@@ -152,7 +152,6 @@ def producer(steps, delta_frec):
 
         print ('Frecuencia: ' + str(f) + ' Hz')
         print ('Empieza Productor: '+ str(i))
-        i = i + 1
 
         # Se entera que se guardó el paso anterior (lock2), avisa que comienza el nuevo (lock1), y envia la señal
         lock2.acquire()
@@ -170,21 +169,18 @@ data_acq = np.zeros([steps,chunk_acq],dtype=np.int16)  # aqui guardo la señal a
 
 def consumer():
     global consumer_exit
-    j = 0
-    while(j<steps):
-
+    for i in range(steps):
         # Toma el lock, adquiere la señal y la guarda en el array
         lock1.acquire()
         stream_input.start_stream()
-        stream_input.read(chunk_delay)
-        data_i = stream_input.read(chunk_acq)
+        stream_input.read(chunk_delay) #lee el dlay del buffer pero no lo usa
+        data_i = stream_input.read(chunk_acq) #lee la medición correcta
         stream_input.stop_stream()
 
-        data_acq[j][:] = np.frombuffer(data_i, dtype=np.int16)
+        data_acq[i][:] = np.frombuffer(data_i, dtype=np.int16)
 
-        print ('Termina Consumidor: '+ str(j))
+        print ('Termina Consumidor: '+ str(i))
         print ('')
-        j = j + 1
         lock2.release() # Avisa al productor que terminó de escribir los datos y puede comenzar con el próximo step
 
     consumer_exit = True
@@ -216,7 +212,7 @@ p.terminate()
 ### ANALISIS de la señal adquirida
 
 # Elijo la frecuencia
-ind_frec = 5
+ind_frec = 0
 
 
 ### Muestra la serie temporal de las señales enviadas y adquiridas
@@ -261,7 +257,7 @@ plt.show()
 
 ## Estudo del retardo en caso que delta_frec = 0
 
-i_comp = 10
+i_comp = 5
 
 retardos = np.array([])
 for i in range(steps):
