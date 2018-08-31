@@ -22,6 +22,29 @@ params = {'legend.fontsize': 'medium',
          'ytick.labelsize':'medium'}
 pylab.rcParams.update(params)
 
+# defino el diccionario parámetros
+    """
+    fs : int, frecuencia de sampleo de la placa de audio. Valor máximo 44100*8 Hz. [Hz]
+    steps_frec : int, cantidad de pasos del barrido de frecuencias.
+    duration_sec_send : float, tiempo de duración de la adquisición. [seg]
+    input_channels : int, cantidad de canales de entrada.
+    output_channels : int, cantidad de canales de salida.
+    tipo_ch0 : {'square', 'sin', 'ramp', 'constant'}, tipo de señal enviada en el canal 0.
+    amplitud_ch0 : float, amplitud de la señal del canal 0. [V]. Máximo valor 1 V.
+    frec_ini_hz_ch0 : float, frecuencia inicial del barrido del canal 0. [Hz]
+    frec_fin_hz_ch0 : float, frecuencia final del barrido del canal 0. [Hz]
+    tipo_ch1 : {'square', 'sin', 'ramp'}, tipo de señal enviada en el canal 1.
+    amplitud_ch1 : float, amplitud de la señal del canal 1. [V]. Máximo valor 1 V.
+    frec_ini_hz_ch1 : float, frecuencia inicial del barrido del canal 1. [Hz]
+    frec_fin_hz_ch1 : float, frecuencia final del barrido del canal 1. [Hz]
+    """
+parametros = {'fs':4100, 'steps_frec':10, 'duration_sec_send' = 0.3 'input_channels' = 2,
+ 'output_channels' = 2, 'tipo_ch0' = 'square', 'amplitud_ch0' = 0.1, 'frec_ini_hz_ch0' = 500,
+ 'frec_fin_hz_ch0' = 500, 'tipo_ch1' = 'ramp', 'amplitud_ch1' = 0.1, 'frec_ini_hz_ch1' = 500,
+ 'frec_fin_hz_ch1' = 5000, 'fs' = 44100, 'steps_frec' = 10}
+
+
+
 def play_rec(parametros):
     """
     Descripción:
@@ -43,20 +66,6 @@ def play_rec(parametros):
     -----------
     Para el ingreso de los parametros de adquisición se utiliza un diccionario.
 
-    parametros = {}
-    parametros['fs'] : int, frecuencia de sampleo de la placa de audio. Valor máximo 44100*8 Hz. [Hz]
-    parametros['steps_frec'] : int, cantidad de pasos del barrido de frecuencias.
-    parametros['duration_sec_send'] : float, tiempo de duración de la adquisición. [seg]
-    parametros['input_channels'] : int, cantidad de canales de entrada.
-    parametros['output_channels'] : int, cantidad de canales de salida.
-    parametros['tipo_ch0'] : {'square', 'sin', 'ramp', 'constant'}, tipo de señal enviada en el canal 0.
-    parametros['amplitud_ch0'] : float, amplitud de la señal del canal 0. [V]. Máximo valor 1 V.
-    parametros['frec_ini_hz_ch0'] : float, frecuencia inicial del barrido del canal 0. [Hz]
-    parametros['frec_fin_hz_ch0'] : float, frecuencia final del barrido del canal 0. [Hz]
-    parametros['tipo_ch1'] : {'square', 'sin', 'ramp'}, tipo de señal enviada en el canal 1.
-    parametros['amplitud_ch1'] : float, amplitud de la señal del canal 1. [V]. Máximo valor 1 V.
-    parametros['frec_ini_hz_ch1'] : float, frecuencia inicial del barrido del canal 1. [Hz]
-    parametros['frec_fin_hz_ch1'] : float, frecuencia final del barrido del canal 1. [Hz]
 
     Salida (returns):
     -----------------
@@ -70,20 +79,6 @@ def play_rec(parametros):
     Ejemplo:
     --------
 
-    parametros = {}
-    parametros['fs'] = 44100
-    parametros['steps_frec'] = 10
-    parametros['duration_sec_send'] = 0.3
-    parametros['input_channels'] = 2
-    parametros['output_channels'] = 2
-    parametros['tipo_ch0'] = 'square'
-    parametros['amplitud_ch0'] = 0.1
-    parametros['frec_ini_hz_ch0'] = 500
-    parametros['frec_fin_hz_ch0'] = 500
-    parametros['tipo_ch1'] = 'ramp'
-    parametros['amplitud_ch1'] = 0.1
-    parametros['frec_ini_hz_ch1'] = 500
-    parametros['frec_fin_hz_ch1'] = 5000
 
     data_acq, data_send, frecs_send = play_rec(parametros)
 
