@@ -83,7 +83,7 @@ def signalgen(type,fr,amp,duration,fs):
     return output
 
 
-def play_rec(parametros):
+def play_rec(fs,input_channels,data_out,corrige_retardos):
     
     
     """
@@ -104,13 +104,11 @@ def play_rec(parametros):
     
     Parámetros:
     -----------
-    Para el ingreso de los parametros de adquisición se utiliza un diccionario.
     
-    parametros = {}
-    parametros['fs'] : int, frecuencia de sampleo de la placa de audio. Valor máximo 44100*8 Hz. [Hz]
-    parametros['input_channels'] : int, cantidad de canales de entrada.
-    parametros['data_out'] : numpy array dtype=np.float32, array de tres dimensiones de la señal a enviar [cantidad_de_pasos][muestras_por_paso][output_channels]
-    parametros['corrige_retardos'] = {'si','no'}, corrige el retardo utilizando la función sincroniza_con_trigger
+    fs : int, frecuencia de sampleo de la placa de audio. Valor máximo 44100*8 Hz. [Hz]
+    input_channels : int, cantidad de canales de entrada.
+    data_out : numpy array dtype=np.float32, array de tres dimensiones de la señal a enviar [cantidad_de_pasos][muestras_por_paso][output_channels]
+    corrige_retardos = {'si','no'}, corrige el retardo utilizando la función sincroniza_con_trigger
     
     Salida (returns):
     -----------------
@@ -123,21 +121,16 @@ def play_rec(parametros):
     Ejemplo:
     --------
     
-    parametros = {}
-    parametros['fs'] = 44100
-    parametros['input_channels'] = 2
-    parametros['data_out'] = 2   
-    parametros['corrige_retardos'] = 'si'
+    fs = 44100
+    input_channels = 2
+    data_out = np.array([[][]])   
+    corrige_retardos = 'si'
     
     data_in, retardos = play_rec(parametros)
    
     Autores: Leslie Cusato, Marco Petriella    
     """    
     
-    fs = parametros['fs']
-    data_out = parametros['data_out']
-    input_channels = parametros['input_channels']
-    corrige_retardos = parametros['corrige_retardos']
     steps = data_out.shape[0]
     
     # Cargo parametros comunes a los dos canales  
@@ -282,8 +275,8 @@ def sincroniza_con_trigger(trigger,data_in):
     
     Salida (returns):
     -----------------
-    data_in_corrected : numpy array, señal de salida con retardo corregido de tamaño [cantidad_de_pasos][muestras_por_pasos_input][input_channels]. 
-                         El tamaño de la segunda dimensión es la misma que la de data_out.
+    data_in_corrected : numpy array, señal de salida con retardo corregido de tamaño [cantidad_de_pasos][muestras_por_pasos_trigger][input_channels]. 
+                         El tamaño de la segunda dimensión es la misma que la de data_trigger.
     retardos : numpy array, array con los retardos de tamaño [cantidad_de_pasos].
     
     Autores: Leslie Cusato, Marco Petriella   
@@ -315,7 +308,7 @@ def sincroniza_con_trigger(trigger,data_in):
                 data_in_corrected[i,:,j] = np.full_like(data_in_corrected[i,:,j], np.nan)
                 
     for i in errores:
-        print(u'Correlación fuera de los límites en el paso ' + str(i) + '. Atención se ponen NaNs. \n')
+        print(u'- Correlación fuera de los límites en el paso ' + str(i) + '. Atención! la salida se completa con NaNs. \n')
         
         
     return data_in_corrected, retardos
@@ -328,13 +321,13 @@ def sincroniza_con_trigger(trigger,data_in):
 fs = 44100 *8  
 duracion = 0.2
 muestras = int(fs*duracion)
-canales = 2
+input_channels = 2
 amplitud = 0.3
 frec_ini = 500
-frec_fin = 25000
+frec_fin = 30000
 pasos = 40
 delta_frec = (frec_fin-frec_ini)/(pasos+1)
-data_out = np.zeros([pasos,muestras,canales])
+data_out = np.zeros([pasos,muestras,input_channels])
 
 for i in range(pasos):
     parametros_signal = {}
@@ -350,16 +343,10 @@ for i in range(pasos):
 
 
 # Realiza medicion
-parametros = {}
-parametros['fs'] = fs
-parametros['input_channels'] = 2
-parametros['corrige_retardos'] = 'si'
-parametros['data_out'] = data_out
-
-data_in, retardos = play_rec(parametros)
+data_in, retardos = play_rec(fs,input_channels,data_out,'si')
 
 
-plt.plot(np.transpose(data_in[39,:,0]))
+plt.plot(np.transpose(data_in[10,:,0]))
 
 
 #%%
