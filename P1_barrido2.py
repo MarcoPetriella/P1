@@ -121,11 +121,10 @@ def play_rec(fs,input_channels,data_out,corrige_retardos):
     Ejemplo:
     --------
     
-    parametros = {}
-    parametros['fs'] = 44100
-    parametros['input_channels'] = 2
-    parametros['data_out'] = 2   
-    parametros['corrige_retardos'] = 'si'
+    fs = 44100
+    input_channels = 2
+    data_out = np.array([[][]])   
+    corrige_retardos = 'si'
     
     data_in, retardos = play_rec(parametros)
    
@@ -309,7 +308,7 @@ def sincroniza_con_trigger(trigger,data_in):
                 data_in_corrected[i,:,j] = np.full_like(data_in_corrected[i,:,j], np.nan)
                 
     for i in errores:
-        print(u'- Correlación fuera de los límites en el paso ' + str(i) + '. Atención! la salida se completa NaNs. \n')
+        print(u'- Correlación fuera de los límites en el paso ' + str(i) + '. Atención! la salida se completa con NaNs. \n')
         
         
     return data_in_corrected, retardos
