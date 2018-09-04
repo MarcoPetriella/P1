@@ -23,25 +23,52 @@ params = {'legend.fontsize': 'medium',
 pylab.rcParams.update(params)
 
 # defino el diccionario parámetros
+
+parametros = {'fs':4100, 'steps_frec':10, 'duration_sec_send' = 0.3,
+              'input_channels' = 2, 'output_channels' = 2, 'tipo_ch0' = 'square',
+              'amplitud_ch0' = 0.1, 'frec_ini_hz_ch0' = 500, 'frec_fin_hz_ch0' = 500,
+              'tipo_ch1' = 'ramp', 'amplitud_ch1' = 0.1, 'frec_ini_hz_ch1' = 500,
+              'frec_fin_hz_ch1' = 5000, 'fs' = 44100, 'steps_frec' = 10}
+              """
+              fs : int, frecuencia de sampleo de la placa de audio. Valor máximo 44100*8 Hz. [Hz]
+              steps_frec : int, cantidad de pasos del barrido de frecuencias.
+              duration_sec_send : float, tiempo de duración de la adquisición. [seg]
+              input_channels : int, cantidad de canales de entrada.
+              output_channels : int, cantidad de canales de salida.
+              tipo_ch0 : {'square', 'sin', 'ramp', 'constant'}, tipo de señal enviada en el canal 0.
+              amplitud_ch0 : float, amplitud de la señal del canal 0. [V]. Máximo valor 1 V.
+              frec_ini_hz_ch0 : float, frecuencia inicial del barrido del canal 0. [Hz]
+              frec_fin_hz_ch0 : float, frecuencia final del barrido del canal 0. [Hz]
+              tipo_ch1 : {'square', 'sin', 'ramp'}, tipo de señal enviada en el canal 1.
+              amplitud_ch1 : float, amplitud de la señal del canal 1. [V]. Máximo valor 1 V.
+              frec_ini_hz_ch1 : float, frecuencia inicial del barrido del canal 1. [Hz]
+              frec_fin_hz_ch1 : float, frecuencia final del barrido del canal 1. [Hz]
+              """
+def signalgen(type,fr,amp,duration,fs):
     """
-    fs : int, frecuencia de sampleo de la placa de audio. Valor máximo 44100*8 Hz. [Hz]
-    steps_frec : int, cantidad de pasos del barrido de frecuencias.
-    duration_sec_send : float, tiempo de duración de la adquisición. [seg]
-    input_channels : int, cantidad de canales de entrada.
-    output_channels : int, cantidad de canales de salida.
-    tipo_ch0 : {'square', 'sin', 'ramp', 'constant'}, tipo de señal enviada en el canal 0.
-    amplitud_ch0 : float, amplitud de la señal del canal 0. [V]. Máximo valor 1 V.
-    frec_ini_hz_ch0 : float, frecuencia inicial del barrido del canal 0. [Hz]
-    frec_fin_hz_ch0 : float, frecuencia final del barrido del canal 0. [Hz]
-    tipo_ch1 : {'square', 'sin', 'ramp'}, tipo de señal enviada en el canal 1.
-    amplitud_ch1 : float, amplitud de la señal del canal 1. [V]. Máximo valor 1 V.
-    frec_ini_hz_ch1 : float, frecuencia inicial del barrido del canal 1. [Hz]
-    frec_fin_hz_ch1 : float, frecuencia final del barrido del canal 1. [Hz]
+    generates different signals with len(duration*fs)
+
+    type: 'sin', 'square', 'ramp', 'constant'
+    fr: float, frequency of the signal in Hz
+    amp: float, amplitud of the signal
+    duration: float, duration of the signal in s
+    fs: float, sampling rate in Hz
+
+    output: array, signal generated
+
     """
-parametros = {'fs':4100, 'steps_frec':10, 'duration_sec_send' = 0.3 'input_channels' = 2,
- 'output_channels' = 2, 'tipo_ch0' = 'square', 'amplitud_ch0' = 0.1, 'frec_ini_hz_ch0' = 500,
- 'frec_fin_hz_ch0' = 500, 'tipo_ch1' = 'ramp', 'amplitud_ch1' = 0.1, 'frec_ini_hz_ch1' = 500,
- 'frec_fin_hz_ch1' = 5000, 'fs' = 44100, 'steps_frec' = 10}
+    # output=np.array[()]
+    if type == 'sine':
+        # output = amp*np.sin(2*np.pi*np.arange(1*chunk_send)*f/fs))
+        output = amp*np.sin(2.*np.pi*np.arange(int(duration*fs))*fr/fs)
+    elif type == 'square':
+        output = amp*signal.square(2.*np.pi*np.arange(int(duration*fs))*fr/fs)
+    elif type == 'constant':
+        output = np.full(len(input),amp)
+    else:
+        print ('wrong signal type')
+        output = 0
+    return output
 
 
 
@@ -52,20 +79,15 @@ def play_rec(parametros):
     Esta función permite utilizar la placa de audio de la pc como un generador de funciones / osciloscopio
     con dos canales de entrada y dos de salida. Para ello utiliza la libreria pyaudio y las opciones de write() y read()
     para escribir y leer los buffer de escritura y lectura. Para realizar el envio y adquisición simultánea de señales, utiliza
-    un esquema de tipo productor-consumidor que se ejecutan en thread o hilos diferenntes. Para realizar la comunicación
+    un esquema de tipo productor-consumidor que se ejecutan en thread o hilos diferentes. Para realizar la comunicación
     entre threads y evitar overrun o sobreescritura de los datos del buffer de lectura se utilizan dos variables de tipo block.
     El block1 se activa desde proceso productor y avisa al consumidor que el envio de la señal ha comenzado y que por lo tanto
     puede iniciar la adquisición.
-    El block2 se activa desde el proceso consumidor y aviso al productor que la lesctura de los datos ha finalizado y por lo tanto
+    El block2 se activa desde el proceso consumidor y aviso al productor que la lectura de los datos ha finalizado y por lo tanto
     puede comenzar un nuevo paso del barrido.
     Teniendo en cuenta que existe un retardo entre la señal enviada y adquirida, y que existe variabilidad en el retardo; se puede
     utilizar el canal 0 de entrada y salida para el envio y adquisicón de una señal de disparo que permita sincronizar las mediciones.
     Notar que cuando se pone output_channel = 1, en la segunda salida pone la misma señal que en el channel 1 de salida.
-
-    Parámetros:
-    -----------
-    Para el ingreso de los parametros de adquisición se utiliza un diccionario.
-
 
     Salida (returns):
     -----------------
@@ -73,15 +95,12 @@ def play_rec(parametros):
     data_send: numpy array, array de tamaño [steps_frec][muestras_por_pasos_output][output_channels]
     frecs_send: numpy array, array de tamaño [steps_frec][output_channels]
 
-    Las muestras_por_pasos está determinada por los tiempos de duración de la señal enviada y adquirida. El tiempo entre
-    muestras es 1/fs.
+    Las muestras_por_pasos está determinada por los tiempos de duración de la señal enviada y adquirida.
+    El tiempo entre muestras es 1/fs.
 
     Ejemplo:
     --------
-
-
     data_acq, data_send, frecs_send = play_rec(parametros)
-
 
     Autores: Leslie Cusato, Marco Petriella
     """
