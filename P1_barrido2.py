@@ -277,7 +277,7 @@ def sincroniza_con_trigger(trigger,data_in):
     
     Parámetros:
     -----------
-    trigger: numpy array, array de tamaño [cantidad_de_pasos][muestras_por_pasos_trigger][output_channels]
+    trigger: numpy array, array de tamaño [cantidad_de_pasos][muestras_por_pasos_trigger][trigger_channels]
     data_in: numpy array, array de tamaño [cantidad_de_pasos][muestras_por_pasos_input][input_channels]
     
     Salida (returns):
