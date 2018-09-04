@@ -57,46 +57,30 @@ def barra_progreso(paso,pasos_totales,leyenda,tiempo_ini):
         print("\n")    
     
     
-    
 
-def function_generator(parametros):
-    
+def signalgen(type,fr,amp,duration,fs):
     """
-    Esta función genera señales de tipo seno, cuadrada y rampa.
-    
-    Parametros:
-    -----------
-    Para el ingreso de los parametros de adquisición se utiliza un diccionario.
-
-    fs : int, frecuencia de sampleo de la placa de audio. Valor máximo 44100*8 Hz. [Hz] 
-    frec : float, frecuencia de la señal. [Hz] 
-    amplitud : float, amplitud de la señal.
-    duracion : float, tiempo de duración de la señal. [seg]
-    tipo : {'square', 'sin', 'ramp', 'constant'}, tipo de señal.   
-    
-    Salida (returns):
-    -----------------
-    output_signal : numpy array, señal de salida.
-    
-    Autores: Leslie Cusato, Marco Petriella
+    generates different signals with len(duration*fs)
+    type: 'sin', 'square', 'ramp', 'constant'
+    fr: float, frequency of the signal in Hz
+    amp: float, amplitud of the signal
+    duration: float, duration of the signal in s
+    fs: float, sampling rate in Hz
+    output: array, signal generated
     """
-
-    fs = parametros['fs']
-    frec = parametros['frec']
-    amplitud = parametros['amplitud']
-    duracion = parametros['duracion']
-    tipo = parametros['tipo']
-        
-    if tipo is 'sin':
-        output_signal = (amplitud*np.sin(2*np.pi*np.arange(int(duracion*fs))*frec/fs)).astype(np.float32)  
-    elif tipo is 'square':
-        output_signal = amplitud*signal.square(2*np.pi*np.arange(int(duracion*fs))*frec/fs, duty=0.5).astype(np.float32) 
-    elif tipo is 'ramp':
-        output_signal = amplitud*signal.sawtooth(2*np.pi*np.arange(int(duracion*fs))*frec/fs, width=0.5).astype(np.float32) 
-    elif tipo is 'constant':
-        output_signal = amplitud*(int(duracion*fs)).astype(np.float32) 
-
-    return output_signal
+    # output=np.array[()]
+    if type == 'sine':
+        output = amp*np.sin(2.*np.pi*np.arange(int(duration*fs))*fr/fs)
+    elif type == 'square':
+        output = amp*signal.square(2.*np.pi*np.arange(int(duration*fs))*fr/fs)
+    elif type == 'ramp':
+        output = amplitud*signal.sawtooth(2*np.pi*np.arange(int(duration*fs))*fr/fs, width=0.5).astype(np.float32)                 
+    elif type == 'constant':
+        output = np.full(len(input),amp)
+    else:
+        print ('wrong signal type')
+        output = 0
+    return output
 
 
 def play_rec(parametros):
@@ -253,16 +237,25 @@ def play_rec(parametros):
     t2 = threading.Thread(target=consumer, args=[steps])
     t1.start()
     t2.start()
-             
+           
+    flag_correccion = 0
     while(not producer_exit[0] or not consumer_exit[0]):
-        time.sleep(0.2)
+        try: 
+            time.sleep(0.2)
+        except KeyboardInterrupt:
+            flag_correccion = 1
+            consumer_exit[0] = True  
+            producer_exit[0] = True        
+            time.sleep(0.5)
+            print ('\n Medición interrumpida \n')
+
          
     stream_input.close()
     stream_output.close()
     p.terminate()   
     
     retardos = np.array([])
-    if corrige_retardos is 'si':
+    if corrige_retardos is 'si' and flag_correccion == 0:
         parametros_retardo = {}
         parametros_retardo['data_out'] = data_out
         parametros_retardo['data_in']  = data_in        
@@ -339,13 +332,13 @@ data_out = np.zeros([pasos,muestras,canales])
 
 for i in range(pasos):
     parametros_signal = {}
-    parametros_signal['fs'] = fs
-    parametros_signal['amplitud'] = amplitud
-    parametros_signal['frec'] = frec_ini + i*delta_frec
-    parametros_signal['duracion'] = duracion
-    parametros_signal['tipo'] = 'sin'
+    fs = fs
+    amp = amplitud
+    fr = frec_ini + i*delta_frec
+    duration = duracion
+    type = 'sine'
     
-    output_signal = function_generator(parametros_signal)
+    output_signal = signalgen(type,fr,amp,duration,fs)
     output_signal = output_signal*np.arange(muestras)/muestras
     data_out[i,:,0] = output_signal
 
