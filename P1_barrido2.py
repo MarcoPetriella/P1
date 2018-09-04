@@ -282,8 +282,8 @@ def sincroniza_con_trigger(trigger,data_in):
     
     Salida (returns):
     -----------------
-    data_in_corrected : numpy array, señal de salida con retardo corregido de tamaño [cantidad_de_pasos][muestras_por_pasos_input][input_channels]. 
-                         El tamaño de la segunda dimensión es la misma que la de data_out.
+    data_in_corrected : numpy array, señal de salida con retardo corregido de tamaño [cantidad_de_pasos][muestras_por_pasos_trigger][input_channels]. 
+                         El tamaño de la segunda dimensión es la misma que la de data_trigger.
     retardos : numpy array, array con los retardos de tamaño [cantidad_de_pasos].
     
     Autores: Leslie Cusato, Marco Petriella   
