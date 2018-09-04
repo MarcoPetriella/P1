@@ -309,7 +309,7 @@ def sincroniza_con_trigger(trigger,data_in):
                 data_in_corrected[i,:,j] = np.full_like(data_in_corrected[i,:,j], np.nan)
                 
     for i in errores:
-        print(u'Correlación fuera de los límites en el paso ' + str(i) + '. Atención se ponen NaNs. \n')
+        print(u'- Correlación fuera de los límites en el paso ' + str(i) + '. Atención! la salida se completa NaNs. \n')
         
         
     return data_in_corrected, retardos
@@ -347,7 +347,7 @@ for i in range(pasos):
 data_in, retardos = play_rec(fs,input_channels,data_out,'si')
 
 
-plt.plot(np.transpose(data_in[39,:,0]))
+plt.plot(np.transpose(data_in[10,:,0]))
 
 
 #%%
