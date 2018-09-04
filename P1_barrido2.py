@@ -176,7 +176,8 @@ def play_rec(fs,input_channels,data_out,corrige_retardos):
        
     # Defino el thread que envia la señal          
     def producer(steps):  
-        for i in range(steps):
+        i = 0
+        while i < steps and producer_exit[0] is False:
                                       
             # Genero las señales de salida para los canales
             samples = np.zeros([output_channels,4*chunk_send],dtype = np.float32)
@@ -191,7 +192,9 @@ def play_rec(fs,input_channels,data_out,corrige_retardos):
             lock1.release() 
             stream_output.start_stream()
             stream_output.write(samples_out)
-            stream_output.stop_stream()        
+            stream_output.stop_stream()     
+            
+            i = i + 1
     
         producer_exit[0] = True  
             
@@ -199,7 +202,8 @@ def play_rec(fs,input_channels,data_out,corrige_retardos):
     # Defino el thread que adquiere la señal   
     def consumer(steps):
         tiempo_ini = datetime.datetime.now()
-        for i in range(steps):           
+        i = 0
+        while i < steps and consumer_exit[0] is False:
             
             # Toma el lock, adquiere la señal y la guarda en el array
             lock1.acquire()
@@ -215,8 +219,10 @@ def play_rec(fs,input_channels,data_out,corrige_retardos):
                 data_in[i,:,j] = data_i[j::input_channels]                   
                     
             # Barra de progreso
-            barra_progreso(i,steps,'Progreso barrido',tiempo_ini)          
-                                
+            barra_progreso(i,steps,'Progreso barrido',tiempo_ini)   
+            
+            i = i + 1
+                               
             lock2.release() # Avisa al productor que terminó de escribir los datos y puede comenzar con el próximo step
     
         consumer_exit[0] = True  
@@ -231,28 +237,27 @@ def play_rec(fs,input_channels,data_out,corrige_retardos):
     t2 = threading.Thread(target=consumer, args=[steps])
     t1.start()
     t2.start()
-           
-    flag_correccion = 0
+    
+    # Salida de la medición       
+    salida_forzada = 0
     while(not producer_exit[0] or not consumer_exit[0]):
         try: 
             time.sleep(0.2)
         except KeyboardInterrupt:
-            flag_correccion = 1
+            salida_forzada = 1
             consumer_exit[0] = True  
-            producer_exit[0] = True        
-            time.sleep(0.5)
+            producer_exit[0] = True  
+            time.sleep(0.2)
             print ('\n \n Medición interrumpida \n')
 
-         
+    # Finalizo los puertos    
     stream_input.close()
     stream_output.close()
     p.terminate()   
-    
+        
+    # Corrección de retardo por correlación cruzada
     retardos = np.array([])
-    if corrige_retardos is 'si' and flag_correccion == 0:
-        parametros_retardo = {}
-        parametros_retardo['data_out'] = data_out
-        parametros_retardo['data_in']  = data_in        
+    if corrige_retardos is 'si' and salida_forzada == 0:            
         data_in, retardos = sincroniza_con_trigger(data_out, data_in)       
     
     return data_in, retardos
@@ -281,6 +286,8 @@ def sincroniza_con_trigger(trigger,data_in):
     
     Autores: Leslie Cusato, Marco Petriella   
     """
+    
+    print ('\n \n Presione Ctrl + c para interrumpir  \n')
  
     extra = 0
         
@@ -293,19 +300,25 @@ def sincroniza_con_trigger(trigger,data_in):
     tiempo_ini = datetime.datetime.now()
     errores = []         
     for i in range(data_in.shape[0]):
-        barra_progreso(i,data_in.shape[0],u'Progreso corrección',tiempo_ini) 
+        try:
+            barra_progreso(i,data_in.shape[0],u'Progreso corrección',tiempo_ini) 
+    
+            corr = np.correlate(trigger_send[i,:] - np.mean(trigger_send[i,:]),trigger_acq[i,:] - np.mean(trigger_acq[i,:]),mode='full')
+            pos_max = trigger_acq.shape[1] - np.argmax(corr)-1
+            retardos = np.append(retardos,pos_max)
+            
+            if pos_max >= 0 and pos_max+trigger_send.shape[1]+extra < data_in.shape[1]:             
+                for j in range(data_in.shape[2]):
+                    data_in_corrected[i,:,j] = data_in[i,pos_max:pos_max+trigger_send.shape[1]+extra,j]
+            else:
+                errores.append(i)
+                for j in range(data_in.shape[2]):
+                    data_in_corrected[i,:,j] = np.full_like(data_in_corrected[i,:,j], np.nan)
+                    
+        except KeyboardInterrupt:
+            print (u'\n \n Proceso corrección interrumpido \n')
+            break
 
-        corr = np.correlate(trigger_send[i,:] - np.mean(trigger_send[i,:]),trigger_acq[i,:] - np.mean(trigger_acq[i,:]),mode='full')
-        pos_max = trigger_acq.shape[1] - np.argmax(corr)-1
-        retardos = np.append(retardos,pos_max)
-        
-        if pos_max >= 0 and pos_max+trigger_send.shape[1]+extra < data_in.shape[1]:             
-            for j in range(data_in.shape[2]):
-                data_in_corrected[i,:,j] = data_in[i,pos_max:pos_max+trigger_send.shape[1]+extra,j]
-        else:
-            errores.append(i)
-            for j in range(data_in.shape[2]):
-                data_in_corrected[i,:,j] = np.full_like(data_in_corrected[i,:,j], np.nan)
                 
     for i in errores:
         print(u'- Correlación fuera de los límites en el paso ' + str(i) + '. Atención! la salida se completa con NaNs. \n')
@@ -324,7 +337,7 @@ muestras = int(fs*duracion)
 input_channels = 2
 amplitud = 0.3
 frec_ini = 500
-frec_fin = 30000
+frec_fin = 3000
 pasos = 40
 delta_frec = (frec_fin-frec_ini)/(pasos+1)
 data_out = np.zeros([pasos,muestras,input_channels])
@@ -346,7 +359,7 @@ for i in range(pasos):
 data_in, retardos = play_rec(fs,input_channels,data_out,'si')
 
 
-plt.plot(np.transpose(data_in[10,:,0]))
+plt.plot(np.transpose(data_in[39,:,0]))
 
 
 #%%
