@@ -233,6 +233,7 @@ def play_rec(parametros):
     consumer_exit = [False] 
             
     # Inicio los threads    
+    print ('\n \n Presione Ctrl + c para interrumpir  \n')
     t1 = threading.Thread(target=producer, args=[steps])
     t2 = threading.Thread(target=consumer, args=[steps])
     t1.start()
@@ -247,7 +248,7 @@ def play_rec(parametros):
             consumer_exit[0] = True  
             producer_exit[0] = True        
             time.sleep(0.5)
-            print ('\n Medición interrumpida \n')
+            print ('\n \n Medición interrumpida \n')
 
          
     stream_input.close()
@@ -259,13 +260,13 @@ def play_rec(parametros):
         parametros_retardo = {}
         parametros_retardo['data_out'] = data_out
         parametros_retardo['data_in']  = data_in        
-        data_in, retardos = sincroniza_con_trigger(parametros_retardo)       
+        data_in, retardos = sincroniza_con_trigger(data_out, data_in)       
     
     return data_in, retardos
  
 
 
-def sincroniza_con_trigger(parametros):
+def sincroniza_con_trigger(trigger,data_in):
     
     """
     Esta función corrige el retardo de las mediciones adquiridas con la función play_rec. Para ello utiliza la señal de 
@@ -276,8 +277,8 @@ def sincroniza_con_trigger(parametros):
     
     Parámetros:
     -----------
+    trigger: numpy array, array de tamaño [cantidad_de_pasos][muestras_por_pasos_output][output_channels]
     data_in: numpy array, array de tamaño [cantidad_de_pasos][muestras_por_pasos_input][input_channels]
-    data_out: numpy array, array de tamaño [cantidad_de_pasos][muestras_por_pasos_output][output_channels]
     
     Salida (returns):
     -----------------
@@ -287,10 +288,7 @@ def sincroniza_con_trigger(parametros):
     
     Autores: Leslie Cusato, Marco Petriella   
     """
-    
-    data_out = parametros['data_out']
-    data_in = parametros['data_in']   
-    
+ 
     extra = 0
         
     data_in_corrected = np.zeros([data_out.shape[0],data_out.shape[1]+extra,data_in.shape[2]])
@@ -300,16 +298,24 @@ def sincroniza_con_trigger(parametros):
     trigger_acq = data_in[:,:,0]           
     
     tiempo_ini = datetime.datetime.now()
-             
+    errores = []         
     for i in range(data_in.shape[0]):
         barra_progreso(i,data_in.shape[0],u'Progreso corrección',tiempo_ini) 
 
         corr = np.correlate(trigger_send[i,:] - np.mean(trigger_send[i,:]),trigger_acq[i,:] - np.mean(trigger_acq[i,:]),mode='full')
         pos_max = trigger_acq.shape[1] - np.argmax(corr)-1
         retardos = np.append(retardos,pos_max)
-                    
-        for j in range(data_in.shape[2]):
-            data_in_corrected[i,:,j] = data_in[i,pos_max:pos_max+trigger_send.shape[1]+extra,j]
+        
+        if pos_max >= 0 and pos_max+trigger_send.shape[1]+extra < data_in.shape[1]:             
+            for j in range(data_in.shape[2]):
+                data_in_corrected[i,:,j] = data_in[i,pos_max:pos_max+trigger_send.shape[1]+extra,j]
+        else:
+            errores.append(i)
+            for j in range(data_in.shape[2]):
+                data_in_corrected[i,:,j] = np.full_like(data_in_corrected[i,:,j], np.nan)
+                
+    for i in errores:
+        print(u'Correlación fuera de los límites en el paso ' + str(i) + '. Atención se ponen NaNs. \n')
         
         
     return data_in_corrected, retardos
@@ -353,17 +359,14 @@ parametros['data_out'] = data_out
 data_in, retardos = play_rec(parametros)
 
 
-plt.plot(np.transpose(data_in[0,:,0]))
+plt.plot(np.transpose(data_in[39,:,0]))
 
 
 #%%
 
 ### Corrige retardo y grafica
-#parametros_retardo = {}
-#parametros_retardo['data_out'] = data_out
-#parametros_retardo['data_in']  = data_in
 #
-#data_in, retardos = sincroniza_con_trigger(parametros_retardo)
+#data_in, retardos = sincroniza_con_trigger(data_out, data_in) 
 
 #%%
 ch = 0
