@@ -339,12 +339,13 @@ fs = 44100 *8
 duracion = 0.2
 muestras = int(fs*duracion)
 input_channels = 2
+output_channels = 2
 amplitud = 0.3
 frec_ini = 500
 frec_fin = 3000
 pasos = 40
 delta_frec = (frec_fin-frec_ini)/(pasos+1)
-data_out = np.zeros([pasos,muestras,input_channels])
+data_out = np.zeros([pasos,muestras,output_channels])
 
 for i in range(pasos):
     parametros_signal = {}
