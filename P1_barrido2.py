@@ -240,7 +240,7 @@ def play_rec(fs,input_channels,data_out,corrige_retardos):
     
     # Salida de la medición       
     salida_forzada = 0
-    while(not producer_exit[0] or not consumer_exit[0]):
+    while not producer_exit[0] or not consumer_exit[0]:
         try: 
             time.sleep(0.2)
         except KeyboardInterrupt:
@@ -250,7 +250,11 @@ def play_rec(fs,input_channels,data_out,corrige_retardos):
             time.sleep(0.2)
             print ('\n \n Medición interrumpida \n')
 
-    # Finalizo los puertos    
+
+    # Finalizo los puertos 
+    while stream_input.is_active() and stream_output.is_active():
+        time.sleep(0.2)
+    
     stream_input.close()
     stream_output.close()
     p.terminate()   
@@ -359,7 +363,7 @@ for i in range(pasos):
 data_in, retardos = play_rec(fs,input_channels,data_out,'si')
 
 
-plt.plot(np.transpose(data_in[39,:,0]))
+plt.plot(np.transpose(data_in[0,:,0]))
 
 
 #%%
@@ -393,7 +397,6 @@ ax.set_ylabel('Frecuencia')
 #%%
 ### ANALISIS de la señal adquirida. Cheque que la señal adquirida corresponde a la enviada
 
-fs = parametros['fs']
 
 ch_acq = 0
 ch_send = 0
