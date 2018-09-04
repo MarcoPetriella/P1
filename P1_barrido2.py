@@ -57,46 +57,30 @@ def barra_progreso(paso,pasos_totales,leyenda,tiempo_ini):
         print("\n")    
     
     
-    
 
-def function_generator(parametros):
-    
+def signalgen(type,fr,amp,duration,fs):
     """
-    Esta función genera señales de tipo seno, cuadrada y rampa.
-    
-    Parametros:
-    -----------
-    Para el ingreso de los parametros de adquisición se utiliza un diccionario.
-
-    fs : int, frecuencia de sampleo de la placa de audio. Valor máximo 44100*8 Hz. [Hz] 
-    frec : float, frecuencia de la señal. [Hz] 
-    amplitud : float, amplitud de la señal.
-    duracion : float, tiempo de duración de la señal. [seg]
-    tipo : {'square', 'sin', 'ramp', 'constant'}, tipo de señal.   
-    
-    Salida (returns):
-    -----------------
-    output_signal : numpy array, señal de salida.
-    
-    Autores: Leslie Cusato, Marco Petriella
+    generates different signals with len(duration*fs)
+    type: 'sin', 'square', 'ramp', 'constant'
+    fr: float, frequency of the signal in Hz
+    amp: float, amplitud of the signal
+    duration: float, duration of the signal in s
+    fs: float, sampling rate in Hz
+    output: array, signal generated
     """
-
-    fs = parametros['fs']
-    frec = parametros['frec']
-    amplitud = parametros['amplitud']
-    duracion = parametros['duracion']
-    tipo = parametros['tipo']
-        
-    if tipo is 'sin':
-        output_signal = (amplitud*np.sin(2*np.pi*np.arange(int(duracion*fs))*frec/fs)).astype(np.float32)  
-    elif tipo is 'square':
-        output_signal = amplitud*signal.square(2*np.pi*np.arange(int(duracion*fs))*frec/fs, duty=0.5).astype(np.float32) 
-    elif tipo is 'ramp':
-        output_signal = amplitud*signal.sawtooth(2*np.pi*np.arange(int(duracion*fs))*frec/fs, width=0.5).astype(np.float32) 
-    elif tipo is 'constant':
-        output_signal = amplitud*(int(duracion*fs)).astype(np.float32) 
-
-    return output_signal
+    # output=np.array[()]
+    if type == 'sine':
+        output = amp*np.sin(2.*np.pi*np.arange(int(duration*fs))*fr/fs)
+    elif type == 'square':
+        output = amp*signal.square(2.*np.pi*np.arange(int(duration*fs))*fr/fs)
+    elif type == 'ramp':
+        output = amplitud*signal.sawtooth(2*np.pi*np.arange(int(duration*fs))*fr/fs, width=0.5).astype(np.float32)                 
+    elif type == 'constant':
+        output = np.full(len(input),amp)
+    else:
+        print ('wrong signal type')
+        output = 0
+    return output
 
 
 def play_rec(parametros):
@@ -125,12 +109,12 @@ def play_rec(parametros):
     parametros = {}
     parametros['fs'] : int, frecuencia de sampleo de la placa de audio. Valor máximo 44100*8 Hz. [Hz]
     parametros['input_channels'] : int, cantidad de canales de entrada.
-    parametros['data_send'] : numpy array dtype=np.float32, array de tres dimensiones de la señal a enviar [cantidad_de_pasos][muestras_por_paso][output_channels]
+    parametros['data_out'] : numpy array dtype=np.float32, array de tres dimensiones de la señal a enviar [cantidad_de_pasos][muestras_por_paso][output_channels]
     parametros['corrige_retardos'] = {'si','no'}, corrige el retardo utilizando la función sincroniza_con_trigger
     
     Salida (returns):
     -----------------
-    data_acq: numpy array, array de tamaño [cantidad_de_pasos][muestras_por_pasos_input][input_channels]
+    data_in: numpy array, array de tamaño [cantidad_de_pasos][muestras_por_pasos_input][input_channels]
     retardos: numpy_array, array de tamaño [cantidad_de_pasos] con los retardos entre trigger enviado y adquirido
     
     Las muestras_por_pasos está determinada por los tiempos de duración de la señal enviada y adquirida. El tiempo entre 
@@ -142,23 +126,23 @@ def play_rec(parametros):
     parametros = {}
     parametros['fs'] = 44100
     parametros['input_channels'] = 2
-    parametros['data_send'] = 2   
+    parametros['data_out'] = 2   
     parametros['corrige_retardos'] = 'si'
     
-    data_acq, retardos = play_rec(parametros)
+    data_in, retardos = play_rec(parametros)
    
     Autores: Leslie Cusato, Marco Petriella    
     """    
     
     fs = parametros['fs']
-    data_send = parametros['data_send']
+    data_out = parametros['data_out']
     input_channels = parametros['input_channels']
     corrige_retardos = parametros['corrige_retardos']
-    steps = data_send.shape[0]
+    steps = data_out.shape[0]
     
     # Cargo parametros comunes a los dos canales  
-    duration_sec_send = data_send.shape[1]/fs
-    output_channels = data_send.shape[2]
+    duration_sec_send = data_out.shape[1]/fs
+    output_channels = data_out.shape[2]
             
     # Obligo a la duracion de la adquisicion > a la de salida    
     duration_sec_acq = duration_sec_send + 0.2 
@@ -171,7 +155,7 @@ def play_rec(parametros):
     chunk_acq = int(fs*duration_sec_acq)
     
     # Donde se guardan los resultados                     
-    data_acq = np.zeros([data_send.shape[0],chunk_acq,input_channels],dtype=np.int32)      
+    data_in = np.zeros([data_out.shape[0],chunk_acq,input_channels],dtype=np.int32)      
     
     # Defino el stream del parlante
     stream_output = p.open(format=pyaudio.paFloat32,
@@ -204,7 +188,7 @@ def play_rec(parametros):
             # Genero las señales de salida para los canales
             samples = np.zeros([output_channels,4*chunk_send],dtype = np.float32)
             for j in range(output_channels):
-                    samples[j,0:chunk_send] = data_send[i,:,j]
+                    samples[j,0:chunk_send] = data_out[i,:,j]
               
             # Paso la salida a un array de una dimension
             samples_out = np.reshape(samples,4*chunk_send*output_channels,order='F')
@@ -235,7 +219,7 @@ def play_rec(parametros):
                 
             # Guarda la salida                   
             for j in range(input_channels):
-                data_acq[i,:,j] = data_i[j::input_channels]                   
+                data_in[i,:,j] = data_i[j::input_channels]                   
                     
             # Barra de progreso
             barra_progreso(i,steps,'Progreso barrido',tiempo_ini)          
@@ -249,30 +233,40 @@ def play_rec(parametros):
     consumer_exit = [False] 
             
     # Inicio los threads    
+    print ('\n \n Presione Ctrl + c para interrumpir  \n')
     t1 = threading.Thread(target=producer, args=[steps])
     t2 = threading.Thread(target=consumer, args=[steps])
     t1.start()
     t2.start()
-             
+           
+    flag_correccion = 0
     while(not producer_exit[0] or not consumer_exit[0]):
-        time.sleep(0.2)
+        try: 
+            time.sleep(0.2)
+        except KeyboardInterrupt:
+            flag_correccion = 1
+            consumer_exit[0] = True  
+            producer_exit[0] = True        
+            time.sleep(0.5)
+            print ('\n \n Medición interrumpida \n')
+
          
     stream_input.close()
     stream_output.close()
     p.terminate()   
     
     retardos = np.array([])
-    if corrige_retardos is 'si':
+    if corrige_retardos is 'si' and flag_correccion == 0:
         parametros_retardo = {}
-        parametros_retardo['data_send'] = data_send
-        parametros_retardo['data_acq']  = data_acq        
-        data_acq, retardos = sincroniza_con_trigger(parametros_retardo)       
+        parametros_retardo['data_out'] = data_out
+        parametros_retardo['data_in']  = data_in        
+        data_in, retardos = sincroniza_con_trigger(data_out, data_in)       
     
-    return data_acq, retardos
+    return data_in, retardos
  
 
 
-def sincroniza_con_trigger(parametros):
+def sincroniza_con_trigger(trigger,data_in):
     
     """
     Esta función corrige el retardo de las mediciones adquiridas con la función play_rec. Para ello utiliza la señal de 
@@ -283,43 +277,48 @@ def sincroniza_con_trigger(parametros):
     
     Parámetros:
     -----------
-    data_acq: numpy array, array de tamaño [cantidad_de_pasos][muestras_por_pasos_input][input_channels]
-    data_send: numpy array, array de tamaño [cantidad_de_pasos][muestras_por_pasos_output][output_channels]
+    trigger: numpy array, array de tamaño [cantidad_de_pasos][muestras_por_pasos_trigger][trigger_channels]
+    data_in: numpy array, array de tamaño [cantidad_de_pasos][muestras_por_pasos_input][input_channels]
     
     Salida (returns):
     -----------------
-    data_acq_corrected : numpy array, señal de salida con retardo corregido de tamaño [cantidad_de_pasos][muestras_por_pasos_input][input_channels]. 
-                         El tamaño de la segunda dimensión es la misma que la de data_send.
+    data_in_corrected : numpy array, señal de salida con retardo corregido de tamaño [cantidad_de_pasos][muestras_por_pasos_input][input_channels]. 
+                         El tamaño de la segunda dimensión es la misma que la de data_out.
     retardos : numpy array, array con los retardos de tamaño [cantidad_de_pasos].
     
     Autores: Leslie Cusato, Marco Petriella   
     """
-    
-    data_send = parametros['data_send']
-    data_acq = parametros['data_acq']   
-    
+ 
     extra = 0
         
-    data_acq_corrected = np.zeros([data_send.shape[0],data_send.shape[1]+extra,data_acq.shape[2]])
+    data_in_corrected = np.zeros([data_out.shape[0],data_out.shape[1]+extra,data_in.shape[2]])
     retardos = np.array([])
  
-    trigger_send = data_send[:,:,0]
-    trigger_acq = data_acq[:,:,0]           
+    trigger_send = data_out[:,:,0]
+    trigger_acq = data_in[:,:,0]           
     
     tiempo_ini = datetime.datetime.now()
-             
-    for i in range(data_acq.shape[0]):
-        barra_progreso(i,data_acq.shape[0],u'Progreso corrección',tiempo_ini) 
+    errores = []         
+    for i in range(data_in.shape[0]):
+        barra_progreso(i,data_in.shape[0],u'Progreso corrección',tiempo_ini) 
 
         corr = np.correlate(trigger_send[i,:] - np.mean(trigger_send[i,:]),trigger_acq[i,:] - np.mean(trigger_acq[i,:]),mode='full')
         pos_max = trigger_acq.shape[1] - np.argmax(corr)-1
         retardos = np.append(retardos,pos_max)
-                    
-        for j in range(data_acq.shape[2]):
-            data_acq_corrected[i,:,j] = data_acq[i,pos_max:pos_max+trigger_send.shape[1]+extra,j]
+        
+        if pos_max >= 0 and pos_max+trigger_send.shape[1]+extra < data_in.shape[1]:             
+            for j in range(data_in.shape[2]):
+                data_in_corrected[i,:,j] = data_in[i,pos_max:pos_max+trigger_send.shape[1]+extra,j]
+        else:
+            errores.append(i)
+            for j in range(data_in.shape[2]):
+                data_in_corrected[i,:,j] = np.full_like(data_in_corrected[i,:,j], np.nan)
+                
+    for i in errores:
+        print(u'Correlación fuera de los límites en el paso ' + str(i) + '. Atención se ponen NaNs. \n')
         
         
-    return data_acq_corrected, retardos
+    return data_in_corrected, retardos
 
 #%%
     
@@ -335,19 +334,19 @@ frec_ini = 500
 frec_fin = 25000
 pasos = 40
 delta_frec = (frec_fin-frec_ini)/(pasos+1)
-data_send = np.zeros([pasos,muestras,canales])
+data_out = np.zeros([pasos,muestras,canales])
 
 for i in range(pasos):
     parametros_signal = {}
-    parametros_signal['fs'] = fs
-    parametros_signal['amplitud'] = amplitud
-    parametros_signal['frec'] = frec_ini + i*delta_frec
-    parametros_signal['duracion'] = duracion
-    parametros_signal['tipo'] = 'sin'
+    fs = fs
+    amp = amplitud
+    fr = frec_ini + i*delta_frec
+    duration = duracion
+    type = 'sine'
     
-    output_signal = function_generator(parametros_signal)
+    output_signal = signalgen(type,fr,amp,duration,fs)
     output_signal = output_signal*np.arange(muestras)/muestras
-    data_send[i,:,0] = output_signal
+    data_out[i,:,0] = output_signal
 
 
 # Realiza medicion
@@ -355,39 +354,36 @@ parametros = {}
 parametros['fs'] = fs
 parametros['input_channels'] = 2
 parametros['corrige_retardos'] = 'si'
-parametros['data_send'] = data_send
+parametros['data_out'] = data_out
 
-data_acq, retardos = play_rec(parametros)
+data_in, retardos = play_rec(parametros)
 
 
-plt.plot(np.transpose(data_acq[0,:,0]))
+plt.plot(np.transpose(data_in[39,:,0]))
 
 
 #%%
 
 ### Corrige retardo y grafica
-#parametros_retardo = {}
-#parametros_retardo['data_send'] = data_send
-#parametros_retardo['data_acq']  = data_acq
 #
-#data_acq, retardos = sincroniza_con_trigger(parametros_retardo)
+#data_in, retardos = sincroniza_con_trigger(data_out, data_in) 
 
 #%%
 ch = 0
 step = 10
 
 fig = plt.figure(figsize=(14, 7), dpi=250)
-ax = fig.add_axes([.12, .12, .75, .8])
+ax = fig.add_axes([.12, .15, .75, .8])
 ax1 = ax.twinx()
-ax.plot(np.transpose(data_acq[step,:,ch]),'-',color='r', label='señal adquirida',alpha=0.5)
-ax1.plot(np.transpose(data_send[step,:,ch]),'-',color='b', label='señal enviada',alpha=0.5)
+ax.plot(np.transpose(data_in[step,:,ch]),'-',color='r', label='señal adquirida',alpha=0.5)
+ax1.plot(np.transpose(data_out[step,:,ch]),'-',color='b', label='señal enviada',alpha=0.5)
 ax.legend(loc=1)
 ax1.legend(loc=4)
 plt.show()
 
 
 fig = plt.figure(figsize=(14, 7), dpi=250)
-ax = fig.add_axes([.1, .1, .75, .8])
+ax = fig.add_axes([.12, .15, .75, .8])
 ax.hist(retardos/fs*1000, bins=100)
 ax.set_title(u'Retardos')
 ax.set_xlabel('Retardos [ms]')
@@ -404,15 +400,15 @@ ch_send = 0
 paso = 5
 
 ### Realiza la FFT de la señal enviada y adquirida
-fft_send = abs(fft.fft(data_send[paso,:,ch_send]))/int(data_send.shape[1]/2+1)
-fft_send = fft_send[0:int(data_send.shape[1]/2+1)]
-fft_acq = abs(fft.fft(data_acq[paso,:,ch_acq]))/int(data_acq.shape[1]/2+1)
-fft_acq = fft_acq[0:int(data_acq.shape[1]/2+1)]
+fft_send = abs(fft.fft(data_out[paso,:,ch_send]))/int(data_out.shape[1]/2+1)
+fft_send = fft_send[0:int(data_out.shape[1]/2+1)]
+fft_acq = abs(fft.fft(data_in[paso,:,ch_acq]))/int(data_in.shape[1]/2+1)
+fft_acq = fft_acq[0:int(data_in.shape[1]/2+1)]
 
-frec_send = np.linspace(0,int(data_send.shape[1]/2),int(data_send.shape[1]/2+1))
-frec_send = frec_send*(fs/2+1)/int(data_send.shape[1]/2+1)
-frec_acq = np.linspace(0,int(data_acq.shape[1]/2),int(data_acq.shape[1]/2+1))
-frec_acq = frec_acq*(fs/2+1)/int(data_acq.shape[1]/2+1)
+frec_send = np.linspace(0,int(data_out.shape[1]/2),int(data_out.shape[1]/2+1))
+frec_send = frec_send*(fs/2+1)/int(data_out.shape[1]/2+1)
+frec_acq = np.linspace(0,int(data_in.shape[1]/2),int(data_in.shape[1]/2+1))
+frec_acq = frec_acq*(fs/2+1)/int(data_in.shape[1]/2+1)
 
 fig = plt.figure(figsize=(14, 7), dpi=250)
 ax = fig.add_axes([.12, .12, .75, .8])
