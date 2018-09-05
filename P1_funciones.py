@@ -107,6 +107,8 @@ def play_rec(fs,input_channels,data_out,corrige_retardos,offset_correlacion=0,st
     input_channels : int, cantidad de canales de entrada.
     data_out : numpy array dtype=np.float32, array de tres dimensiones de la señal a enviar [cantidad_de_pasos][muestras_por_paso][output_channels]
     corrige_retardos = {'si','no'}, corrige el retardo utilizando la función sincroniza_con_trigger
+    offset_correlacion: int, muestra (tiempo) del trigger a partir de cual se hace la correlacion
+    steps_correlacion: int, muestras (tiempo) del trigger con el cual se hace la correlacion
     
     Salida (returns):
     -----------------
