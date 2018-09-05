@@ -37,17 +37,16 @@ pylab.rcParams.update(params)
 #%%
     
 
-
 # Genero matriz de señales: ejemplo de barrido en frecuencias en el canal 0
 fs = 44100*8  
-duracion = 0.3
+duracion = 0.5
 muestras = int(fs*duracion)
 input_channels = 2
 output_channels = 2
-amplitud = 0.1
-frec_ini = 200
-frec_fin = 2000
-pasos = 10
+amplitud = 1
+frec_ini = 1000
+frec_fin = 1000
+pasos = 2
 delta_frec = (frec_fin-frec_ini)/(pasos+1)
 data_out = np.zeros([pasos,muestras,output_channels])
 
@@ -57,21 +56,56 @@ for i in range(pasos):
     amp = amplitud
     fr = frec_ini + i*delta_frec
     duration = duracion
-    type = 'sine'
     
-    output_signal = signalgen(type,fr,amp,duration,fs)
-    output_signal = output_signal*np.arange(muestras)/muestras
-    #output_signal = amplitud*signal.chirp(np.arange(muestras)/fs,frec_fin,duracion,frec_ini)
-    
-    data_out[i,:,0] = output_signal
+    if i == 0:
+        output_signal = signalgen('sine',fr,amp,duration,fs)
+        data_out[i,:,0] = output_signal
+        
+        output_signal = signalgen('sine',fr,amp,duration,fs)
+        data_out[i,:,1] = output_signal
 
+    if i == 1:
+        output_signal = signalgen('ramp',fr,amp,duration,fs)
+        data_out[i,:,0] = output_signal
+        
+        output_signal = signalgen('ramp',fr,amp,duration,fs)
+        data_out[i,:,1] = output_signal
 
 # Realiza medicion
 offset_correlacion = 0#int(fs*(1))
 steps_correlacion = 0#int(fs*(1))
 data_in, retardos = play_rec(fs,input_channels,data_out,'si',offset_correlacion,steps_correlacion)
 
-plt.plot(np.transpose(data_in[0,:,0]))
+plt.plot(np.transpose(data_in[1,:,0]))
+
+#%% Medimos linealidad en amplitud
+#Linealidad para seno
+
+carpeta_salida = 'linealidad'
+os.mkdir(carpeta_salida)
+
+lin_sen_ch0 = data_in[0,:,0]/data_out[0,:,0]
+lin_sen_ch1 = data_in[0,:,1]/data_out[0,:,1]
+lin_ramp_ch0 = data_in[1,:,0]/data_out[1,:,0]
+lin_ramp_ch1 = data_in[1,:,1]/data_out[1,:,1]
+
+fig = plt.figure(figsize=(14, 7), dpi=250)
+ax = fig.add_axes([.12, .15, .75, .8])
+ax.plot(data_out[0,int(fs*0.1):-int(fs*0.1),0],data_in[0,int(fs*0.1):-int(fs*0.1),0],'.',label='Seno en CH0',markersize=1)
+ax.plot(data_out[0,int(fs*0.1):-int(fs*0.1),1],data_in[0,int(fs*0.1):-int(fs*0.1),1],'.',label='Seno en CH1',markersize=1)
+ax.plot(data_out[1,int(fs*0.1):-int(fs*0.1),0],data_in[1,int(fs*0.1):-int(fs*0.1),0],'.',label='Rampa en CH0',markersize=1)
+ax.plot(data_out[1,int(fs*0.1):-int(fs*0.1),1],data_in[1,int(fs*0.1):-int(fs*0.1),1],'.',label='Rampa en CH1',markersize=1)
+ax.set_xlabel('señal enviada')
+ax.set_ylabel('señal recibida [u.a.]')
+ax.legend(loc=2)
+ax.grid(linestyle='--')
+figname = os.path.join(carpeta_salida, 'calibracion.png')
+fig.savefig(figname, dpi=300)  
+plt.close(fig)
+
+np.save(os.path.join(carpeta_salida, 'data_out'),data_out)
+np.save(os.path.join(carpeta_salida, 'data_in'),data_in)
+
 
 
 #%%
@@ -82,7 +116,7 @@ plt.plot(np.transpose(data_in[0,:,0]))
 
 #%%
 ch = 0
-step = 8
+step = 1
 
 fig = plt.figure(figsize=(14, 7), dpi=250)
 ax = fig.add_axes([.12, .15, .75, .8])
@@ -167,7 +201,7 @@ plt.plot(Vd,Ir)
 
 #%%
 
-# Respuesta emisor-receptor
+# Respuesta emisor-receptor METODO CHIRP
 
 fs = 44100*8  
 duracion = 30
