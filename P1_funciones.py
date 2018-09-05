@@ -12,12 +12,10 @@ import pyaudio
 import numpy as np
 import matplotlib.pyplot as plt
 import threading
-import numpy.fft as fft
 import datetime
 import time
 import matplotlib.pylab as pylab
 from scipy import signal
-import os
 from sys import stdout
 
     
@@ -74,7 +72,7 @@ def signalgen(type,fr,amp,duration,fs):
     elif type == 'square':
         output = amp*signal.square(2.*np.pi*np.arange(int(duration*fs))*fr/fs)
     elif type == 'ramp':
-        output = amplitud*signal.sawtooth(2*np.pi*np.arange(int(duration*fs))*fr/fs, width=0.5).astype(np.float32)                 
+        output = amp*signal.sawtooth(2*np.pi*np.arange(int(duration*fs))*fr/fs, width=0.5).astype(np.float32)                 
     elif type == 'constant':
         output = np.full(len(input),amp)
     else:
@@ -138,7 +136,7 @@ def play_rec(fs,input_channels,data_out,corrige_retardos,offset_correlacion=0,st
     output_channels = data_out.shape[2]
             
     # Obligo a la duracion de la adquisicion > a la de salida    
-    duration_sec_acq = duration_sec_send + 0.2 
+    duration_sec_acq = duration_sec_send + 0.5 
     
     # Inicia pyaudio
     p = pyaudio.PyAudio()
@@ -232,7 +230,7 @@ def play_rec(fs,input_channels,data_out,corrige_retardos,offset_correlacion=0,st
     consumer_exit = [False] 
             
     # Inicio los threads    
-    print ('\n \n Presione Ctrl + c para interrumpir  \n')
+    print (u'\n Inicio barrido \n Presione Ctrl + c para interrumpir  \n')
     t1 = threading.Thread(target=producer, args=[steps])
     t2 = threading.Thread(target=consumer, args=[steps])
     t1.start()
@@ -293,7 +291,7 @@ def sincroniza_con_trigger(trigger,data_in,offset_correlacion=0,steps_correlacio
     Autores: Leslie Cusato, Marco Petriella   
     """
     
-    print ('\n \n Presione Ctrl + c para interrumpir  \n')
+    print (u'\n Inicio corrección \n Presione Ctrl + c para interrumpir  \n')
  
     extra = 0
         
@@ -314,7 +312,8 @@ def sincroniza_con_trigger(trigger,data_in,offset_correlacion=0,steps_correlacio
             corr = np.correlate(trigger_acq[i,:] - np.mean(trigger_acq[i,:]),trigger_send[i,offset_correlacion:offset_correlacion+steps_correlacion] - np.mean(trigger_send[i,offset_correlacion:offset_correlacion+steps_correlacion]))
             pos_max = np.argmax(corr) - offset_correlacion
             retardos = np.append(retardos,pos_max)
-            #plt.plot(corr)
+#            plt.plot(corr)
+#            print(pos_max)
             
             barra_progreso(i,data_in.shape[0],u'Progreso corrección',tiempo_ini) 
             
@@ -337,216 +336,3 @@ def sincroniza_con_trigger(trigger,data_in,offset_correlacion=0,steps_correlacio
         
     return data_in_corrected, retardos
 
-#%%
-    
-
-
-# Genero matriz de señales: ejemplo de barrido en frecuencias en el canal 0
-fs = 44100*8  
-duracion = 2
-muestras = int(fs*duracion)
-input_channels = 2
-output_channels = 2
-amplitud = 0.1
-frec_ini = 200
-frec_fin = 0
-pasos = 1
-delta_frec = (frec_fin-frec_ini)/(pasos+1)
-data_out = np.zeros([pasos,muestras,output_channels])
-
-for i in range(pasos):
-    parametros_signal = {}
-    fs = fs
-    amp = amplitud
-    fr = frec_ini + i*delta_frec
-    duration = duracion
-    type = 'sine'
-    
-    output_signal = signalgen(type,fr,amp,duration,fs)
-    output_signal = output_signal*np.arange(muestras)/muestras
-    #output_signal = amplitud*signal.chirp(np.arange(muestras)/fs,frec_fin,duracion,frec_ini)
-    
-    data_out[i,:,0] = output_signal
-
-
-# Realiza medicion
-offset_correlacion = 0#int(fs*(1))
-steps_correlacion = 0#int(fs*(1))
-data_in, retardos = play_rec(fs,input_channels,data_out,'si',offset_correlacion,steps_correlacion)
-
-plt.plot(np.transpose(data_in[0,:,0]))
-
-
-#%%
-
-### Corrige retardo y grafica
-#
-#data_in, retardos = sincroniza_con_trigger(data_out, data_in) 
-
-#%%
-ch = 0
-step = 0
-
-fig = plt.figure(figsize=(14, 7), dpi=250)
-ax = fig.add_axes([.12, .15, .75, .8])
-ax1 = ax.twinx()
-ax.plot(np.transpose(data_in[step,:,ch]),'-',color='r', label='señal adquirida',alpha=0.5)
-ax1.plot(np.transpose(data_out[step,:,ch]),'-',color='b', label='señal enviada',alpha=0.5)
-ax.legend(loc=1)
-ax1.legend(loc=4)
-plt.show()
-
-
-fig = plt.figure(figsize=(14, 7), dpi=250)
-ax = fig.add_axes([.12, .15, .75, .8])
-ax.hist(retardos/fs*1000, bins=100)
-ax.set_title(u'Retardos')
-ax.set_xlabel('Retardos [ms]')
-ax.set_ylabel('Frecuencia')
-
-
-#%%
-### ANALISIS de la señal adquirida. Cheque que la señal adquirida corresponde a la enviada
-
-
-ch_acq = 0
-ch_send = 0
-paso = 0
-
-### Realiza la FFT de la señal enviada y adquirida
-fft_send = abs(fft.fft(data_out[paso,:,ch_send]))**2/int(data_out.shape[1]/2+1)/fs
-fft_send = fft_send[0:int(data_out.shape[1]/2+1)]
-fft_send[1:] = 2*fft_send[1:]
-fft_acq = abs(fft.fft(data_in[paso,:,ch_acq]))**2/int(data_in.shape[1]/2+1)/fs
-fft_acq = fft_acq[0:int(data_in.shape[1]/2+1)]
-fft_acq[1:] = 2*fft_acq[1:]
-
-frec_send = np.linspace(0,int(data_out.shape[1]/2),int(data_out.shape[1]/2+1))
-frec_send = frec_send*(fs/2+1)/int(data_out.shape[1]/2+1)
-frec_acq = np.linspace(0,int(data_in.shape[1]/2),int(data_in.shape[1]/2+1))
-frec_acq = frec_acq*(fs/2+1)/int(data_in.shape[1]/2+1)
-
-fig = plt.figure(figsize=(14, 7), dpi=250)
-ax = fig.add_axes([.12, .12, .75, .8])
-ax1 = ax.twinx()
-ax.plot(frec_send,fft_send,'-' ,label='Frec enviada',alpha=0.7)
-ax1.plot(frec_acq,fft_acq,'-',color='red', label=u'Señal adquirida',alpha=0.7)
-ax.set_title(u'FFT de la señal enviada y adquirida')
-ax.set_xlabel('Frecuencia [Hz]')
-ax.set_ylabel('Amplitud [a.u.]')
-ax.legend(loc=1)
-ax1.legend(loc=4)
-plt.show()
-
-
-fig = plt.figure(figsize=(14, 7), dpi=250)
-ax = fig.add_axes([.12, .12, .75, .8])
-ax.plot(frec_acq,fft_acq/fft_send,'-',color='red', label=u'Señal adquirida',alpha=0.7)
-ax.set_xlim([0,23000])
-ax.set_ylim([0,1e10])
-ax.set_title(u'FFT de la señal enviada y adquirida')
-ax.set_xlabel('Frecuencia [Hz]')
-ax.set_ylabel('Amplitud [a.u.]')
-ax.legend(loc=1)
-plt.show()
- 
-
-#%%
-
-Is = 1.0*1e-12
-Vt = 26.0*1e-3
-n = 1.
-
-Vd = np.linspace(-1,1,1000)
-Id = Is*(np.exp(Vd/n/Vt)-1)
-
-Rs = 100
-Vs = 1
-Ir = Vs/Rs - Vd/Rs
-
-
-plt.plot(Vd,Id)
-plt.plot(Vd,Ir)
-
-#%%
-
-# Respuesta emisor-receptor
-
-fs = 44100*8  
-duracion = 10
-muestras = int(fs*duracion)
-input_channels = 2
-output_channels = 2
-amplitud = 0.1
-
-# Frecuencias bajas
-frec_ini = 500
-frec_fin = 0
-data_out1 = np.zeros([1,muestras,output_channels])
-output_signal = amplitud*signal.chirp(np.arange(muestras)/fs,frec_fin,duracion,frec_ini)
-data_out1[0,:,0] = output_signal
-
-offset_correlacion = int(fs*(1))
-steps_correlacion = int(fs*(0.2))
-data_in1, retardos1 = play_rec(fs,input_channels,data_out1,'si',offset_correlacion,steps_correlacion)
-
-
-## Frecuencias altas
-frec_ini = 23000
-frec_fin = 100
-data_out2 = np.zeros([1,muestras,output_channels])
-output_signal = amplitud*signal.chirp(np.arange(muestras)/fs,frec_fin,duracion,frec_ini)
-data_out2[0,:,0] = output_signal
-
-offset_correlacion = int(fs*(5))
-steps_correlacion = int(fs*(0.2))
-data_in2, retardos2 = play_rec(fs,input_channels,data_out2,'si',offset_correlacion,steps_correlacion)
-
-
-paso = 0
-ch_send = 0
-ch_acq = 0
-### Realiza la FFT de la señal enviada y adquirida
-fft_send1 = abs(fft.fft(data_out1[paso,:,ch_send]))**2/int(data_out1.shape[1]/2+1)/fs
-fft_send1 = fft_send1[0:int(data_out1.shape[1]/2+1)]
-fft_acq1 = abs(fft.fft(data_in1[paso,:,ch_acq]))**2/int(data_in1.shape[1]/2+1)/fs
-fft_acq1 = fft_acq1[0:int(data_in1.shape[1]/2+1)]
-
-frec_send1 = np.linspace(0,int(data_out1.shape[1]/2),int(data_out1.shape[1]/2+1))
-frec_send1 = frec_send1*(fs/2+1)/int(data_out1.shape[1]/2+1)
-frec_acq1 = np.linspace(0,int(data_in1.shape[1]/2),int(data_in1.shape[1]/2+1))
-frec_acq1 = frec_acq1*(fs/2+1)/int(data_in1.shape[1]/2+1)
-
-fft_norm1 = fft_acq1/fft_send1
-
-### Realiza la FFT de la señal enviada y adquirida
-fft_send2 = abs(fft.fft(data_out2[paso,:,ch_send]))**2/int(data_out2.shape[1]/2+1)/fs
-fft_send2 = fft_send2[0:int(data_out2.shape[1]/2+1)]
-fft_acq2 = abs(fft.fft(data_in2[paso,:,ch_acq]))**2/int(data_in2.shape[1]/2+1)/fs
-fft_acq2 = fft_acq2[0:int(data_in2.shape[1]/2+1)]
-
-frec_send2 = np.linspace(0,int(data_out2.shape[1]/2),int(data_out2.shape[1]/2+1))
-frec_send2 = frec_send2*(fs/2+1)/int(data_out2.shape[1]/2+1)
-frec_acq2 = np.linspace(0,int(data_in2.shape[1]/2),int(data_in2.shape[1]/2+1))
-frec_acq2 = frec_acq2*(fs/2+1)/int(data_in2.shape[1]/2+1)
-
-fft_norm2 = fft_acq2/fft_send2
-
-
-fig = plt.figure(figsize=(14, 7), dpi=250)
-ax = fig.add_axes([.12, .12, .75, .8])
-ax.plot(frec_acq1,fft_acq1,'-',color='red', label=u'Señal adquirida',alpha=0.7)
-ax.plot(frec_acq2,fft_acq2,'-',color='blue', label=u'Señal adquirida',alpha=0.7)
-ax.set_ylim([0,1e20])
-ax.set_xlim([0,23000])
-ax.set_title(u'FFT de la señal enviada y adquirida')
-ax.set_xlabel('Frecuencia [Hz]')
-ax.set_ylabel('Amplitud [a.u.]')
-ax.legend(loc=1)
-plt.show()
-
-
-fig = plt.figure(figsize=(14, 7), dpi=250)
-ax = fig.add_axes([.12, .12, .75, .8])
-ax.plot(frec_send1,fft_send1,'-',color='red', label=u'Señal adquirida',alpha=0.7)
-ax.plot(frec_send2,fft_send2,'-',color='blue', label=u'Señal adquirida',alpha=0.7)
