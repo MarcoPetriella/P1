@@ -25,12 +25,12 @@ from P1_funciones import play_rec
 from P1_funciones import signalgen
 from P1_funciones import sincroniza_con_trigger
 
-params = {'legend.fontsize': 'medium',
+params = {'legend.fontsize': 'large',
      #     'figure.figsize': (15, 5),
-         'axes.labelsize': 'medium',
+         'axes.labelsize': 'large',
          'axes.titlesize':'medium',
-         'xtick.labelsize':'medium',
-         'ytick.labelsize':'medium'}
+         'xtick.labelsize':'large',
+         'ytick.labelsize':'large'}
 pylab.rcParams.update(params)
 
 
@@ -82,7 +82,7 @@ plt.plot(np.transpose(data_in[0,:,0]))
 
 #%%
 ch = 0
-step = 0
+step = 8
 
 fig = plt.figure(figsize=(14, 7), dpi=250)
 ax = fig.add_axes([.12, .15, .75, .8])
@@ -179,14 +179,16 @@ amplitud = 0.1
 # Frecuencias bajas
 frec_ini = 0
 frec_fin = 23000
-data_out1 = np.zeros([1,muestras,output_channels])
 output_signal = amplitud*signal.chirp(np.arange(muestras)/fs,frec_fin,duracion,frec_ini)
-#output_signal = amplitud*np.random.rand(muestras)
+ceros = np.zeros(int(fs*1))
+output_signal = np.append(output_signal,ceros,axis=0)
+data_out1 = np.zeros([1,output_signal.shape[0],output_channels])
+
 data_out1[0,:,0] = output_signal
 
 offset_correlacion = int(fs*(10))
-steps_correlacion = int(fs*(0.2))
-data_in1, retardos1 = play_rec(fs,input_channels,data_out1,'no',offset_correlacion,steps_correlacion)
+steps_correlacion = int(fs*(1))
+data_in1, retardos1 = play_rec(fs,input_channels,data_out1,'si',offset_correlacion,steps_correlacion)
 
 
 #p1 = np.transpose(data_in1[0,:int(fs*1),0])
@@ -203,6 +205,8 @@ data_in1, retardos1 = play_rec(fs,input_channels,data_out1,'no',offset_correlaci
 #
 #plt.plot(p2)
 
+plt.plot(data_out1[0,:,0])
+plt.plot(data_in1[0,:,0]/(2**32))
 ### Realiza la FFT de la señal enviada y adquirida
 paso = 0
 ch_send = 0
@@ -225,16 +229,15 @@ frec_ind_send = np.argmin(np.abs(frec_send1-frec_comp))
 # Interpolo para poder normalizar
 fft_acq1_interp = np.interp(frec_send1, frec_acq1, fft_acq1)
 
-
 carpeta_salida = 'RespuestaPorChirp'
 os.mkdir(carpeta_salida)
 
 fig = plt.figure(figsize=(14, 7), dpi=250)
 ax = fig.add_axes([.12, .12, .75, .8])
-ax.semilogy(frec_send1,fft_acq1_interp/fft_acq1_interp[frec_ind_send],'-',color='blue', label=u'Señal adquirida',alpha=0.7)
-ax.semilogy(frec_send1,fft_send1/fft_send1[frec_ind_send],'-',color='red', label=u'Señal enviada',alpha=0.7)
-ax.set_xlim([-2000,28000])
-ax.set_ylim([1e-4,1e1])
+ax.semilogy(frec_send1,fft_acq1_interp/fft_acq1_interp[frec_ind_send],'-',color='blue', label=u'Señal adquirida',alpha=0.7,linewidth=2)
+ax.semilogy(frec_send1,fft_send1/fft_send1[frec_ind_send],'-',color='red', label=u'Señal enviada',alpha=0.7,linewidth=2)
+ax.set_xlim([-1000,28000])
+ax.set_ylim([1e-3,1e1])
 ax.set_title(u'FFT de la señal enviada y adquirida')
 ax.set_xlabel('Frecuencia [Hz]')
 ax.set_ylabel('Potencia [db]')
@@ -259,15 +262,20 @@ plt.close(fig)
 
 
 # Normalizado
+fft_norm = fft_acq1_interp/fft_acq1_interp[frec_ind_send]/(fft_send1/fft_send1[frec_ind_send])
+
+
 fig = plt.figure(figsize=(14, 7), dpi=250)
 ax = fig.add_axes([.12, .12, .75, .8])
-ax.semilogy(frec_send1,fft_acq1_interp/fft_acq1_interp[frec_ind_send]/(fft_send1/fft_send1[frec_ind_send]),'-',color='blue', label=u'Señal normalizada',alpha=0.7)
-ax.set_xlim([-2000,28000])
-ax.set_ylim([1e-4,1e1])
+ax.semilogy(frec_send1,fft_norm,'-',color='blue', label=u'Señal normalizada',alpha=0.7,linewidth=2)
+ax.axvline(14.6,linestyle='--',color='red',alpha=0.7, label='Ancho de banda')
+ax.axvline(20187,linestyle='--',color='red',alpha=0.7)
+ax.set_xlim([-1000,28000])
+ax.set_ylim([1e-3,1e1])
 ax.set_title(u'FFT de la señal enviada y adquirida')
 ax.set_xlabel('Frecuencia [Hz]')
 ax.set_ylabel('Potencia [db]')
-ax.set_title('Potencia del conjunto emisor-receptor de la placa de audio de PC. Normalizada con señal enviada.')
+ax.set_title('Potencia del conjunto emisor-receptor de la placa de audio de PC. Normalizada con señal enviada. BW: 14.6 Hz - 20187 Hz')
 ax.legend(loc=1)
 ax.grid(linewidth=0.5,linestyle='--')
 plt.show()
