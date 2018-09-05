@@ -17,7 +17,7 @@ import time
 import matplotlib.pylab as pylab
 from scipy import signal
 from sys import stdout
-from numpy.fft import fft
+import numpy.fft as fft
 
 
 from P1_funciones import play_rec
@@ -207,7 +207,7 @@ fig = plt.figure(figsize=(14, 7), dpi=250)
 ax = fig.add_axes([.12, .12, .75, .8])
 ax1 = ax.twinx()
 ax.semilogy(frec_acq1,fft_acq1/fft_acq1[frec_ind],'-',color='red', label=u'Señal adquirida',alpha=0.7)
-ax.set_xlim([-2000,30000])
+ax.set_xlim([-2000,28000])
 ax.set_title(u'FFT de la señal enviada y adquirida')
 ax.set_xlabel('Frecuencia [Hz]')
 ax.set_ylabel('Potencia [a.u.]')
