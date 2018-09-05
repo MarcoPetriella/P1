@@ -268,7 +268,7 @@ def play_rec(fs,input_channels,data_out,corrige_retardos,offset_correlacion=0,st
  
 
 
-def sincroniza_con_trigger(trigger,data_in,offset_correlacion=0,steps_correlacion = 0):
+def sincroniza_con_trigger(trigger,data_in,offset_correlacion=0,steps_correlacion=0):
     
     """
     Esta función corrige el retardo de las mediciones adquiridas con la función play_rec. Para ello utiliza la señal de 
@@ -309,8 +309,8 @@ def sincroniza_con_trigger(trigger,data_in,offset_correlacion=0,steps_correlacio
     for i in range(data_in.shape[0]):
         try:
     
-            corr = np.correlate(trigger_send[i,offset_correlacion:offset_correlacion+steps_correlacion] - np.mean(trigger_send[i,offset_correlacion:offset_correlacion+steps_correlacion]),trigger_acq[i,:] - np.mean(trigger_acq[i,:]),mode='full')
-            pos_max = trigger_acq.shape[1] - np.argmax(corr)-1 - offset_correlacion
+            corr = np.correlate(trigger_acq[i,:] - np.mean(trigger_acq[i,:]),trigger_send[i,offset_correlacion:offset_correlacion+steps_correlacion] - np.mean(trigger_send[i,offset_correlacion:offset_correlacion+steps_correlacion]))
+            pos_max = np.argmax(corr) - offset_correlacion
             retardos = np.append(retardos,pos_max)
             
             barra_progreso(i,data_in.shape[0],u'Progreso corrección',tiempo_ini) 
@@ -340,7 +340,7 @@ def sincroniza_con_trigger(trigger,data_in,offset_correlacion=0,steps_correlacio
 
 # Genero matriz de señales: ejemplo de barrido en frecuencias en el canal 0
 fs = 44100*8  
-duracion = 2
+duracion = 10
 muestras = int(fs*duracion)
 input_channels = 2
 output_channels = 2
@@ -358,21 +358,20 @@ for i in range(pasos):
 #    fr = frec_ini + i*delta_frec
 #    duration = duracion
 #    type = 'sine'
-    
+#    
 #    output_signal = signalgen(type,fr,amp,duration,fs)
 #    output_signal = output_signal*np.arange(muestras)/muestras
-    output_signal = amplitud*signal.chirp(np.arange(muestras)/fs,frec_ini,duracion,frec_fin)
+    output_signal = amplitud*signal.chirp(np.arange(muestras)/fs,frec_fin,duracion,frec_ini)
     
     data_out[i,:,0] = output_signal
 
 
 # Realiza medicion
-offset_correlacion = 0#int(fs*(0.2))
-steps_correlacion = 0#int(fs*(0.2))
-data_in, retardos = play_rec(fs,input_channels,data_out,'si',offset_correlacion,steps_correlacion)
+offset_correlacion = int(fs*(0.2))
+steps_correlacion = int(fs*(0.1))
+data_in, retardos = play_rec(fs,input_channels,data_out,'si')
 
-
-plt.plot(np.transpose(data_in[0,:,0]))
+plt.plot(np.transpose(data_out[0,:,0]))
 
 
 #%%
@@ -438,7 +437,7 @@ plt.show()
 fig = plt.figure(figsize=(14, 7), dpi=250)
 ax = fig.add_axes([.12, .12, .75, .8])
 ax.plot(frec_acq,fft_acq/fft_send,'-',color='red', label=u'Señal adquirida',alpha=0.7)
-ax.set_xlim([0,20000])
+ax.set_xlim([0,23000])
 ax.set_ylim([0,1e10])
 ax.set_title(u'FFT de la señal enviada y adquirida')
 ax.set_xlabel('Frecuencia [Hz]')
