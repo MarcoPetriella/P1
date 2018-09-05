@@ -24,6 +24,14 @@ from P1_funciones import play_rec
 from P1_funciones import signalgen
 from P1_funciones import sincroniza_con_trigger
 
+params = {'legend.fontsize': 'medium',
+     #     'figure.figsize': (15, 5),
+         'axes.labelsize': 'medium',
+         'axes.titlesize':'medium',
+         'xtick.labelsize':'medium',
+         'ytick.labelsize':'medium'}
+pylab.rcParams.update(params)
+
 
 #%%
     
