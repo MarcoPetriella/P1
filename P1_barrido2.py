@@ -83,7 +83,7 @@ def signalgen(type,fr,amp,duration,fs):
     return output
 
 
-def play_rec(fs,input_channels,data_out,corrige_retardos):
+def play_rec(fs,input_channels,data_out,corrige_retardos,offset_correlacion=0,steps_correlacion=0):
     
     
     """
@@ -262,13 +262,13 @@ def play_rec(fs,input_channels,data_out,corrige_retardos):
     # Corrección de retardo por correlación cruzada
     retardos = np.array([])
     if corrige_retardos is 'si' and salida_forzada == 0:            
-        data_in, retardos = sincroniza_con_trigger(data_out, data_in)       
+        data_in, retardos = sincroniza_con_trigger(data_out, data_in,offset_correlacion, steps_correlacion)       
     
     return data_in, retardos
  
 
 
-def sincroniza_con_trigger(trigger,data_in):
+def sincroniza_con_trigger(trigger,data_in,offset_correlacion=0,steps_correlacion = 0):
     
     """
     Esta función corrige el retardo de las mediciones adquiridas con la función play_rec. Para ello utiliza la señal de 
@@ -299,17 +299,21 @@ def sincroniza_con_trigger(trigger,data_in):
     retardos = np.array([])
  
     trigger_send = data_out[:,:,0]
-    trigger_acq = data_in[:,:,0]           
+    trigger_acq = data_in[:,:,0]      
+
+    if steps_correlacion == 0:
+        steps_correlacion = trigger_send.shape[1]     
     
     tiempo_ini = datetime.datetime.now()
     errores = []         
     for i in range(data_in.shape[0]):
         try:
-            barra_progreso(i,data_in.shape[0],u'Progreso corrección',tiempo_ini) 
     
-            corr = np.correlate(trigger_send[i,:] - np.mean(trigger_send[i,:]),trigger_acq[i,:] - np.mean(trigger_acq[i,:]),mode='full')
-            pos_max = trigger_acq.shape[1] - np.argmax(corr)-1
+            corr = np.correlate(trigger_send[i,offset_correlacion:offset_correlacion+steps_correlacion] - np.mean(trigger_send[i,offset_correlacion:offset_correlacion+steps_correlacion]),trigger_acq[i,:] - np.mean(trigger_acq[i,:]),mode='full')
+            pos_max = trigger_acq.shape[1] - np.argmax(corr)-1 - offset_correlacion
             retardos = np.append(retardos,pos_max)
+            
+            barra_progreso(i,data_in.shape[0],u'Progreso corrección',tiempo_ini) 
             
             if pos_max >= 0 and pos_max+trigger_send.shape[1]+extra < data_in.shape[1]:             
                 for j in range(data_in.shape[2]):
@@ -335,33 +339,37 @@ def sincroniza_con_trigger(trigger,data_in):
 
 
 # Genero matriz de señales: ejemplo de barrido en frecuencias en el canal 0
-fs = 44100 *8  
-duracion = 0.2
+fs = 44100*8  
+duracion = 2
 muestras = int(fs*duracion)
 input_channels = 2
 output_channels = 2
-amplitud = 0.3
-frec_ini = 500
-frec_fin = 3000
-pasos = 40
+amplitud = 0.1
+frec_ini = 100
+frec_fin = 25000
+pasos = 1
 delta_frec = (frec_fin-frec_ini)/(pasos+1)
 data_out = np.zeros([pasos,muestras,output_channels])
 
 for i in range(pasos):
-    parametros_signal = {}
-    fs = fs
-    amp = amplitud
-    fr = frec_ini + i*delta_frec
-    duration = duracion
-    type = 'sine'
+#    parametros_signal = {}
+#    fs = fs
+#    amp = amplitud
+#    fr = frec_ini + i*delta_frec
+#    duration = duracion
+#    type = 'sine'
     
-    output_signal = signalgen(type,fr,amp,duration,fs)
-    output_signal = output_signal*np.arange(muestras)/muestras
+#    output_signal = signalgen(type,fr,amp,duration,fs)
+#    output_signal = output_signal*np.arange(muestras)/muestras
+    output_signal = amplitud*signal.chirp(np.arange(muestras)/fs,frec_ini,duracion,frec_fin)
+    
     data_out[i,:,0] = output_signal
 
 
 # Realiza medicion
-data_in, retardos = play_rec(fs,input_channels,data_out,'si')
+offset_correlacion = 0#int(fs*(0.2))
+steps_correlacion = 0#int(fs*(0.2))
+data_in, retardos = play_rec(fs,input_channels,data_out,'si',offset_correlacion,steps_correlacion)
 
 
 plt.plot(np.transpose(data_in[0,:,0]))
@@ -375,7 +383,7 @@ plt.plot(np.transpose(data_in[0,:,0]))
 
 #%%
 ch = 0
-step = 10
+step = 0
 
 fig = plt.figure(figsize=(14, 7), dpi=250)
 ax = fig.add_axes([.12, .15, .75, .8])
@@ -401,7 +409,7 @@ ax.set_ylabel('Frecuencia')
 
 ch_acq = 0
 ch_send = 0
-paso = 5
+paso = 0
 
 ### Realiza la FFT de la señal enviada y adquirida
 fft_send = abs(fft.fft(data_out[paso,:,ch_send]))/int(data_out.shape[1]/2+1)
@@ -426,6 +434,17 @@ ax.legend(loc=1)
 ax1.legend(loc=4)
 plt.show()
 
+
+fig = plt.figure(figsize=(14, 7), dpi=250)
+ax = fig.add_axes([.12, .12, .75, .8])
+ax.plot(frec_acq,fft_acq/fft_send,'-',color='red', label=u'Señal adquirida',alpha=0.7)
+ax.set_xlim([0,20000])
+ax.set_ylim([0,1e10])
+ax.set_title(u'FFT de la señal enviada y adquirida')
+ax.set_xlabel('Frecuencia [Hz]')
+ax.set_ylabel('Amplitud [a.u.]')
+ax.legend(loc=1)
+plt.show()
  
 
 #%%
