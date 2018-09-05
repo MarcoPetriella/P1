@@ -232,7 +232,7 @@ def play_rec(fs,input_channels,data_out,corrige_retardos,offset_correlacion=0,st
     consumer_exit = [False] 
             
     # Inicio los threads    
-    print (u'\n Inicio barrido \n Presione Ctrl + c para interrumpir  \n')
+    print (u'\n Inicio barrido \n Presione Ctrl + c para interrumpir.')
     t1 = threading.Thread(target=producer, args=[steps])
     t2 = threading.Thread(target=consumer, args=[steps])
     t1.start()
@@ -293,7 +293,7 @@ def sincroniza_con_trigger(trigger,data_in,offset_correlacion=0,steps_correlacio
     Autores: Leslie Cusato, Marco Petriella   
     """
     
-    print (u'\n Inicio corrección \n Presione Ctrl + c para interrumpir  \n')
+    print (u'\n Inicio corrección \n Presione Ctrl + c para interrumpir.')
  
     extra = 0
         
