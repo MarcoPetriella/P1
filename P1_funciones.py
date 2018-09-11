@@ -18,7 +18,7 @@ import matplotlib.pylab as pylab
 from scipy import signal
 from sys import stdout
 import numpy.fft as fft
-    
+#import scipy.fftpack as fft 
     
 params = {'legend.fontsize': 'medium',
      #     'figure.figsize': (15, 5),
@@ -142,8 +142,23 @@ def play_rec(fs,input_channels,data_out,corrige_retardos,offset_correlacion=0,st
     data_in, retardos = play_rec(parametros)
    
     Autores: Leslie Cusato, Marco Petriella    
-    """    
+    """  
     
+    # Numero de muestras originales de data_out
+    original_size1 = data_out.shape[1]
+    
+    # Agrega Delay en data_out. Es para asegurar que el delay entre envio-adquisicion no corte la señal. Agrega ceros adelante.
+    delay = 0.0
+    sample_delay = int(fs*delay)
+    new_size1 = original_size1 + sample_delay
+    data_out = completa_con_ceros(data_out,new_size1,mode='backward')
+    
+    # Parametro para obligar que el tamaño del chunk enviado sea multiplo de ind (agrega ceros al final)
+    ind = 1024 
+    new_size1 = int(np.ceil(original_size1/ind)*ind)
+    data_out = completa_con_ceros(data_out,new_size1)
+    
+    #Pasos del barrido
     steps = data_out.shape[0]
     
     # Cargo parametros comunes a los dos canales  
@@ -151,18 +166,15 @@ def play_rec(fs,input_channels,data_out,corrige_retardos,offset_correlacion=0,st
     output_channels = data_out.shape[2]
             
     # Obligo a la duracion de la adquisicion > a la de salida    
-    duration_sec_acq = duration_sec_send + 0.6 
+    duration_sec_acq = duration_sec_send + 1 
     
     # Inicia pyaudio
     p = pyaudio.PyAudio()
     
     # Defino los buffers de lectura y escritura
-    chunk_send = int(fs*duration_sec_send)
+    chunk_send = data_out.shape[1]
     chunk_acq = int(fs*duration_sec_acq)
-    
-    # Donde se guardan los resultados                     
-    data_in = np.zeros([data_out.shape[0],chunk_acq,input_channels],dtype=np.int32)      
-    
+          
     # Defino el stream del parlante
     stream_output = p.open(format=pyaudio.paFloat32,
                     channels = output_channels,
@@ -173,6 +185,13 @@ def play_rec(fs,input_channels,data_out,corrige_retardos,offset_correlacion=0,st
     # Defino un buffer de lectura efectivo que tiene en cuenta el delay de la medición
     chunk_delay = int(fs*stream_output.get_output_latency()) 
     chunk_acq_eff = chunk_acq + chunk_delay
+    
+    # Obligo a que el tamaño del chunk adquirido sea multiplo de ind o potencia de 2
+    #chunk_acq_eff = int(np.ceil(chunk_acq_eff/ind)*ind)
+    chunk_acq_eff = int(2**(np.ceil(np.log(chunk_acq_eff)/np.log(2))))
+
+    # Donde se guardan los resultados                     
+    data_in = np.zeros([data_out.shape[0],chunk_acq_eff,input_channels],dtype=np.int32)    
     
     # Defino el stream del microfono
     stream_input = p.open(format = pyaudio.paInt32,
@@ -221,8 +240,7 @@ def play_rec(fs,input_channels,data_out,corrige_retardos,offset_correlacion=0,st
             # Toma el lock, adquiere la señal y la guarda en el array
             lock1.acquire()
             stream_input.start_stream()
-            stream_input.read(chunk_delay)  
-            data_i = stream_input.read(chunk_acq)  
+            data_i = stream_input.read(chunk_acq_eff)  
             stream_input.stop_stream()   
                 
             data_i = -np.frombuffer(data_i, dtype=np.int32)                            
@@ -275,10 +293,28 @@ def play_rec(fs,input_channels,data_out,corrige_retardos,offset_correlacion=0,st
     # Corrección de retardo por correlación cruzada
     retardos = np.array([])
     if corrige_retardos is 'si' and salida_forzada == 0:            
-        data_in, retardos = sincroniza_con_trigger(data_out, data_in,offset_correlacion, steps_correlacion)       
+        data_in, retardos = sincroniza_con_trigger(data_out[:,sample_delay:sample_delay+original_size1,:], data_in,offset_correlacion, steps_correlacion)       
+        retardos = retardos-sample_delay
     
     return data_in, retardos
  
+
+
+def completa_con_ceros(data_out,new_size1,mode='forward'):
+    
+    data_out_corrected = np.zeros([data_out.shape[0],new_size1,data_out.shape[2]],dtype=np.float32)
+    
+    if mode is 'forward':
+        for i in range(data_out.shape[0]):
+            for k in range(data_out.shape[2]):                
+                data_out_corrected[i,0:data_out.shape[1],k] = data_out[i,:,k]
+                
+    elif mode is 'backward':
+        for i in range(data_out.shape[0]):
+            for k in range(data_out.shape[2]):               
+                data_out_corrected[i,data_out_corrected.shape[1]-data_out.shape[1]:,k] = data_out[i,:,k]                
+    
+    return data_out_corrected
 
 
 def sincroniza_con_trigger(trigger,data_in,offset_correlacion=0,steps_correlacion=0):
@@ -308,6 +344,9 @@ def sincroniza_con_trigger(trigger,data_in,offset_correlacion=0,steps_correlacio
     
     print (u'\n Inicio corrección \n Presione Ctrl + c para interrumpir.')
  
+#    trigger = trigger.astype(np.float32)
+#    data_in = data_in.astype(np.float32)
+    
     # Cantidad de muestras extras que se toman
     extra = 0
     
