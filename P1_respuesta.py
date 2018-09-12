@@ -19,7 +19,7 @@ from scipy import signal
 from sys import stdout
 import numpy.fft as fft
 import os
-
+import scipy 
 
 from P1_funciones import play_rec
 from P1_funciones import signalgen
@@ -41,7 +41,7 @@ pylab.rcParams.update(params)
 # Respuesta emisor-receptor METODO CHIRP
 
 fs = 44100*8  
-duracion = 40
+duracion = 30
 muestras = int(fs*duracion)
 input_channels = 2
 output_channels = 2
@@ -59,7 +59,7 @@ data_out1[0,:,0] = output_signal
 
 #plt.plot(data_out1[0,:,0])
 
-offset_correlacion = int(fs*(15))
+offset_correlacion = int(fs*(5))
 steps_correlacion = int(fs*(0.1))
 data_in1, retardos1 = play_rec(fs,input_channels,data_out1,'si',offset_correlacion,steps_correlacion)
 
@@ -161,26 +161,71 @@ fig.savefig(figname, dpi=300)
 plt.close(fig)
 
 
+
+### TRAZA TEMPORAL
+fig = plt.figure(figsize=(14, 7), dpi=250)
+ax = fig.add_axes([.12, .12, .75, .8])
+ax1 = ax.twinx()
+ax1.plot(data_out1[0,:,0],linewidth=2,color='blue',alpha=0.7,label=u'Señal enviada')
+ax.plot(data_in1[0,:,0],linewidth=2,color='red',alpha=0.7,label=u'Señal adquirida')
+ax.set_xlabel('Tiempo [muestra]')
+ax1.set_ylabel('Intensidad [a.u.]')
+ax.set_ylabel('Intensidad [a.u.]')
+
+ax.set_xlim([0.383*1e7,0.39*1e7])
+ax.grid(linestyle='--')
+ax.legend(loc=1)
+ax1.legend(loc=4)
+ax.set_title('Detalle en baja frecuencia de chirp')
+figname = os.path.join(carpeta_salida,subcarpeta_salida, 'chirp_baja_tiempo.png')
+fig.savefig(figname, dpi=300)  
+plt.close(fig)
+
+
+
 #%%
 
 # Respuesta emisor-receptor METODO RUIDO BLANCO
 
+def gaussian(x, mu, sig):
+    return np.exp(-np.power(x - mu, 2.) / (2 * np.power(sig, 2.)))
+
 fs = 44100*8  
-duracion = 40
+duracion = 30
 muestras = int(fs*duracion)
 input_channels = 2
 output_channels = 2
 amplitud = 0.1
 
-# Frecuencias bajas
 output_signal = amplitud*np.random.rand(muestras)
-output_signal = np.convolve(output_signal,np.ones(10)/10)
 ceros = np.zeros(int(fs*1))
 output_signal = np.append(output_signal,ceros,axis=0)
 output_signal = np.append(ceros,output_signal,axis=0)
+
+if output_signal.shape[0]%2 == 1:
+    output_signal= output_signal[1::]
+
+## Modulacion para sacarle ruido en frecuencias. Equivalente a hacer un moving average en frecuencias
+#t0 = 2
+#dt = 0.01    
+#largo = output_signal.shape[0]
+#x = np.linspace(0,largo/2-1,largo/2)
+#
+##t0 = int(fs*t0)
+##dt = int(fs*dt)
+##mod = (-np.arctan((x-t0)/dt)/np.pi*2 +1)/2
+##mod = np.append(mod,mod[::-1])
+#
+#x = np.linspace(0,largo/2-1,largo/2)/largo*duracion
+#mod = gaussian(x,1.7,0.3)
+#mod = np.append(mod,mod[::-1])
+#
+#output_signal = output_signal*mod
+#plt.plot(output_signal)
+
+
 data_out2 = np.zeros([1,output_signal.shape[0],output_channels])
 data_out2[0,:,1] = output_signal
-
 output_signal = signalgen('sine',1000,amplitud,0.5,fs)  
 data_out2[0,0:output_signal.shape[0],0] = output_signal
 
@@ -190,8 +235,8 @@ data_in2, retardos2 = play_rec(fs,input_channels,data_out2,'si')
 
 
 
-#plt.plot(data_out2[0,:,1])
-#plt.plot(data_in2[0,:,1]/(2**32))
+plt.plot(data_out2[0,:,1])
+plt.plot(data_in2[0,:,1]/(2**32))
 
 
 ### Realiza la FFT de la señal enviada y adquirida

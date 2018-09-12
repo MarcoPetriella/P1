@@ -46,7 +46,7 @@ output_channels = 2
 amplitud = 1
 frec_ini = 1000
 frec_fin = 1000
-pasos = 2
+pasos = 1
 delta_frec = (frec_fin-frec_ini)/(pasos+1)
 data_out = np.zeros([pasos,muestras,output_channels])
 
@@ -59,7 +59,7 @@ for i in range(pasos):
     
     if i == 0:
         output_signal = signalgen('sine',fr,amp,duration,fs)
-        data_out[i,:,0] = output_signal
+        data_out[i,:,0] = output_signal*np.arange(output_signal.shape[0])/output_signal.shape[0]
         
         output_signal = signalgen('sine',fr,amp,duration,fs)
         data_out[i,:,1] = output_signal
@@ -76,7 +76,7 @@ offset_correlacion = 0#int(fs*(1))
 steps_correlacion = 0#int(fs*(1))
 data_in, retardos = play_rec(fs,input_channels,data_out,'si',offset_correlacion,steps_correlacion)
 
-plt.plot(np.transpose(data_in[1,:,0]))
+plt.plot(data_in[0,:,1])
 
 
 #%%
