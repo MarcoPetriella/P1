@@ -48,6 +48,46 @@ if not os.path.exists(os.path.join(carpeta_salida,subcarpeta_salida)):
 
 # Genero matriz de señales: ejemplo de barrido en frecuencias en el canal 0
 fs = 44100*8  
+duracion =5
+muestras = int(fs*duracion)
+input_channels = 2
+output_channels = 1
+amplitud = 1 #V
+frec_ini = 500
+frec_fin = 500
+pasos_frec = 1
+delta_frec = (frec_fin-frec_ini)/(pasos_frec+1)
+data_out = np.zeros([pasos_frec,muestras,output_channels])
+
+for i in range(pasos_frec):
+    parametros_signal = {}
+    fs = fs
+    amp = amplitud
+    fr = frec_ini + i*delta_frec
+    duration = duracion
+    
+    
+    output_signal = signalgen('sine',fr,amp,duration,fs)
+    data_out[i,:,0] = output_signal
+        
+        
+# Realiza medicion
+offset_correlacion = 0#int(fs*(1))
+steps_correlacion = 0#int(fs*(1))
+data_in, retardos = play_rec(fs,input_channels,data_out,'no',offset_correlacion,steps_correlacion)
+
+
+fig = plt.figure(figsize=(14, 7), dpi=250)
+ax = fig.add_axes([.12, .15, .75, .8])
+ax1 = ax.twinx()
+ax.plot(data_in[0,:,0] ,alpha=0.8)
+ax1.plot(data_in[0,:,1] ,color='red',alpha=0.8)
+
+
+#%%
+
+# Genero matriz de señales: ejemplo de barrido en frecuencias en el canal 0
+fs = 44100*8  
 duracion = 0.5
 muestras = int(fs*duracion)
 input_channels = 2

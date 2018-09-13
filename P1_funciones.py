@@ -144,6 +144,15 @@ def play_rec(fs,input_channels,data_out,corrige_retardos,offset_correlacion=0,st
     Autores: Leslie Cusato, Marco Petriella    
     """  
     
+    # Tipo de dato de entrada
+    dato = 'int16'
+    if dato is 'int32':
+        dato_np = np.int32
+        dato_pyaudio = pyaudio.paInt32
+    elif dato is 'int16':
+        dato_np = np.int16
+        dato_pyaudio = pyaudio.paInt16        
+    
     # Numero de muestras originales de data_out
     original_size1 = data_out.shape[1]
     
@@ -155,7 +164,7 @@ def play_rec(fs,input_channels,data_out,corrige_retardos,offset_correlacion=0,st
     
     # Parametro para obligar que el tamaño del chunk enviado sea multiplo de ind (agrega ceros al final)
     ind = 1024 
-    new_size1 = int(np.ceil(original_size1/ind)*ind)
+    new_size1 = int(np.ceil(new_size1/ind)*ind)
     data_out = completa_con_ceros(data_out,new_size1)
     
     #Pasos del barrido
@@ -191,14 +200,14 @@ def play_rec(fs,input_channels,data_out,corrige_retardos,offset_correlacion=0,st
     chunk_acq_eff = int(2**(np.ceil(np.log(chunk_acq_eff)/np.log(2))))
 
     # Donde se guardan los resultados                     
-    data_in = np.zeros([data_out.shape[0],chunk_acq_eff,input_channels],dtype=np.int32)    
+    data_in = np.zeros([data_out.shape[0],chunk_acq_eff,input_channels],dtype=dato_np)    
     
     # Defino el stream del microfono
-    stream_input = p.open(format = pyaudio.paInt32,
+    stream_input = p.open(format = dato_pyaudio,
                     channels = input_channels,
                     rate = fs,
                     input = True,
-                    frames_per_buffer = chunk_acq_eff*p.get_sample_size(pyaudio.paInt32),
+                    frames_per_buffer = chunk_acq_eff*p.get_sample_size(dato_pyaudio),
     )
     
     # Defino los semaforos para sincronizar la señal y la adquisicion
@@ -243,7 +252,7 @@ def play_rec(fs,input_channels,data_out,corrige_retardos,offset_correlacion=0,st
             data_i = stream_input.read(chunk_acq_eff)  
             stream_input.stop_stream()   
                 
-            data_i = -np.frombuffer(data_i, dtype=np.int32)                            
+            data_i = -np.frombuffer(data_i, dtype=dato_np)                            
                 
             # Guarda la salida                   
             for j in range(input_channels):
@@ -302,7 +311,8 @@ def play_rec(fs,input_channels,data_out,corrige_retardos,offset_correlacion=0,st
 
 def completa_con_ceros(data_out,new_size1,mode='forward'):
     
-    data_out_corrected = np.zeros([data_out.shape[0],new_size1,data_out.shape[2]],dtype=np.float32)
+    
+    data_out_corrected = np.zeros([data_out.shape[0],new_size1,data_out.shape[2]],dtype=data_out.dtype)
     
     if mode is 'forward':
         for i in range(data_out.shape[0]):
