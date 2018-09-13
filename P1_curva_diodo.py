@@ -48,13 +48,15 @@ if not os.path.exists(os.path.join(carpeta_salida,subcarpeta_salida)):
 
 # Genero matriz de señales: ejemplo de barrido en frecuencias en el canal 0
 fs = 44100*8  
-duracion = 2
+duracion =5
 muestras = int(fs*duracion)
 input_channels = 2
 output_channels = 1
-amplitud = 1
-frec_ini = 400
-frec_fin = 400
+amplitud_V = 0.98 #V
+valor_rms = 0.7 # en V. Depende del nivel de volumen de parlante.
+amplitud = amplitud_V/valor_rms/np.sqrt(2)
+frec_ini = 200
+frec_fin = 200
 pasos_frec = 1
 delta_frec = (frec_fin-frec_ini)/(pasos_frec+1)
 data_out = np.zeros([pasos_frec,muestras,output_channels])
@@ -86,15 +88,23 @@ np.save(os.path.join(carpeta_salida,subcarpeta_salida, 'data_in'),data_in)
 data_out = np.load(os.path.join(carpeta_salida,subcarpeta_salida, 'data_out.npy'))
 data_in = np.load(os.path.join(carpeta_salida,subcarpeta_salida, 'data_in.npy'))
 
-# Calibracion de los canales
-data_in[:,:,0] = (data_in[:,:,0]-6.37*1e4)/(1.72*1e9)
-data_in[:,:,1] = (data_in[:,:,1]-1.13*1e4)/(1.76*1e9)
+# Para nivel de sonido windows de 24/100
+calibracion_CH0_rampa = [2.06*1e9, 6.02*1e4]
+calibracion_CH0_seno = [2.03*1e9, 1.65*1e5]
 
-resistencia = 1000
-delay = 1
-med = 0.1
-caida_tot = data_in[0,int(fs*delay):int(fs*(delay+med)),0]
-caida_res = data_in[0,int(fs*delay):int(fs*(delay+med)),1]
+calibracion_CH1_rampa = [2.10*1e9, 4.53*1e4]
+calibracion_CH1_seno = [2.07*1e9, 1.41*1e5]
+
+
+# Calibracion de los canales
+data_in[:,:,0] = (data_in[:,:,0]-calibracion_CH0_seno[1])/(calibracion_CH0_seno[0])
+data_in[:,:,1] = (data_in[:,:,1]-calibracion_CH1_seno[1])/(calibracion_CH1_seno[0])
+
+resistencia = 560
+delay = 2
+med = 1
+caida_tot = -data_in[0,int(fs*delay):int(fs*(delay+med)),0]
+caida_res = -data_in[0,int(fs*delay):int(fs*(delay+med)),1]
 caida_diodo = caida_tot - caida_res
 i_res = caida_res/resistencia
 
@@ -103,59 +113,47 @@ i_res = caida_res/resistencia
 ind_cre = np.diff(data_out[0,int(fs*delay):int(fs*(delay+med)),0]) > 0
 ind_dec = np.diff(data_out[0,int(fs*delay):int(fs*(delay+med)),0]) < 0
 
+#ole = data_out[0,int(fs*delay):int(fs*(delay+med))-1,0]
+#plt.plot(ole[ind_dec],'.')
+
 caida_diodo_cre = caida_diodo[1:]
 caida_diodo_cre = caida_diodo_cre[ind_cre]
 caida_diodo_dec = caida_diodo[1:]
 caida_diodo_dec = caida_diodo_dec[ind_dec]
 
-i_res_cre = i_res[1:]
+i_res_cre = i_res[:-1]
 i_res_cre = i_res_cre[ind_cre]
-i_res_dec = i_res[1:]
+i_res_dec = i_res[:-1]
 i_res_dec = i_res_dec[ind_dec]
 
 fig = plt.figure(figsize=(14, 7), dpi=250)
 ax = fig.add_axes([.12, .15, .75, .8])
-ax.plot(-caida_diodo_cre,-i_res_cre*1000,'.',label='Flanco creciente',alpha=0.8)
-ax.plot(-caida_diodo_dec,-i_res_dec*1000,'.',label='Flanco decreciente',alpha=0.8)
+ax.plot(caida_diodo_cre,i_res_cre*1000,'.',label='Flanco creciente',alpha=0.8)
+ax.plot(caida_diodo_dec,i_res_dec*1000,'.',label='Flanco decreciente',alpha=0.8)
 ax.legend()
 ax.grid(linestyle='--')
 ax.set_xlabel(u'Tensión diodo [V]')
 ax.set_ylabel(u'Corriente diodo [mA]')
-ax.set_ylim([-0.20e-2,1.20e-2])
+#ax.set_ylim([-0.20e-2,0.8e-2])
 ax.set_title('Curva del diodo utilizando una rampa')
 figname = os.path.join(carpeta_salida,subcarpeta_salida, 'curva_diodo.png')
 fig.savefig(figname, dpi=300)  
 plt.close(fig)
 
-## CURVA PROMEDIO
-# Reshape
-caida_diodo_dec = np.append(caida_diodo_dec,caida_diodo_dec[caida_diodo_dec.shape[0]-1])
-caida_diodo_cre_r = np.reshape(caida_diodo_cre,[int(caida_diodo_cre.shape[0]/(fs/frec_ini/2)),int(fs/frec_ini/2)])
-caida_diodo_dec_r = np.reshape(caida_diodo_dec,[int(caida_diodo_dec.shape[0]/(fs/frec_ini/2)),int(fs/frec_ini/2)])
 
-i_res_dec = np.append(i_res_dec,caida_diodo_dec[i_res_dec.shape[0]-1])
-i_res_cre_r = np.reshape(i_res_cre,[int(i_res_cre.shape[0]/(fs/frec_ini/2)),int(fs/frec_ini/2)])
-i_res_dec_r = np.reshape(i_res_dec,[int(i_res_dec.shape[0]/(fs/frec_ini/2)),int(fs/frec_ini/2)])
 
-caida_diodo_cre_m = np.mean(caida_diodo_cre_r,axis=0)
-caida_diodo_dec_m = np.mean(caida_diodo_dec_r,axis=0)
 
-i_res_cre_m = np.mean(i_res_cre_r,axis=0)
-i_res_dec_m = np.mean(i_res_dec_r,axis=0)
 
-fig = plt.figure(figsize=(14, 7), dpi=250)
-ax = fig.add_axes([.12, .15, .75, .8])
-ax.plot(-caida_diodo_cre_m,-i_res_cre_m*1000,'.',label='Flanco creciente',alpha=0.8)
-ax.plot(-caida_diodo_dec_m,-i_res_dec_m*1000,'.',label='Flanco decreciente',alpha=0.8)
-ax.legend()
-ax.grid(linestyle='--')
-ax.set_xlabel(u'Tensión diodo [V]')
-ax.set_ylabel(u'Corriente diodo [mA]')
-ax.set_ylim([-0.20e-2,1.20e-2])
-ax.set_title('Curva del diodo promedio utilizando una rampa')
-figname = os.path.join(carpeta_salida,subcarpeta_salida, 'curva_diodo_promedio.png')
-fig.savefig(figname, dpi=300)  
-plt.close(fig)
+
+#fig = plt.figure(figsize=(14, 7), dpi=250)
+#ax = fig.add_axes([.12, .15, .75, .8])
+#ax1 = ax.twinx()
+#ax.plot(data_in[0,:,0] ,alpha=0.8)
+#ax1.plot(data_in[0,:,1] ,color='red',alpha=0.8)
+#
+#
+#ax1.plot(data_out[0,:,0],alpha=0.8)
+
 
 
 #%% AJuste de curvas
@@ -164,19 +162,36 @@ plt.close(fig)
 
 #%%
 
+
 Is = 1.0*1e-12
 Vt = 26.0*1e-3
-n = 1.
+n = 1.0
 
-Vtot = np.linspace(-1,1,1000)
-Id = Is*(np.exp(Vtot/n/Vt)-1)
+vpico = 1
 
-Rs = 1000
-Vs = 1
-Ir = Vs/Rs - Vtot/Rs
+Vd = np.linspace(-vpico,vpico,1000)
+Id = Is*(np.exp(Vd/n/Vt)-1)
 
-Vdiodo = Vtot - Ir*Rs
+Rs = 50
+
+plt.plot(Vd,Id)
+
+#Rs = 50
+#for i in range(-10,10):
+#    Vs = 0.1*i
+#    Ir = Vs/Rs - Vd/Rs
+#    plt.plot(Vd,Ir,color='blue')
+   
+Rs = 500    
+for i in range(-10,10):
+    Vs = 0.1*i
+    Ir = Vs/Rs - Vd/Rs
+    plt.plot(Vd,Ir,color='red')    
+    
+ 
+
+plt.ylim([-0.2e-2,0.05])
 
 
-plt.plot(Vtot,Id)
-plt.plot(Vdiodo,Ir)
+
+
