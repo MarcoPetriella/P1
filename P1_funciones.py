@@ -94,7 +94,7 @@ def signalgen(type,fr,amp,duration,fs):
     return output
 
 
-def play_rec(fs,input_channels,data_out,corrige_retardos,offset_correlacion=0,steps_correlacion=0):
+def play_rec(fs,input_channels,data_out,corrige_retardos,offset_correlacion=0,steps_correlacion=0,delay=0.0,dato='int16'):
     
     
     """
@@ -145,7 +145,7 @@ def play_rec(fs,input_channels,data_out,corrige_retardos,offset_correlacion=0,st
     """  
     
     # Tipo de dato de entrada
-    dato = 'int16'
+    #dato = 'int16'
     if dato is 'int32':
         dato_np = np.int32
         dato_pyaudio = pyaudio.paInt32
@@ -157,7 +157,7 @@ def play_rec(fs,input_channels,data_out,corrige_retardos,offset_correlacion=0,st
     original_size1 = data_out.shape[1]
     
     # Agrega Delay en data_out. Es para asegurar que el delay entre envio-adquisicion no corte la señal. Agrega ceros adelante.
-    delay = 0.0
+    #delay = 0.0
     sample_delay = int(fs*delay)
     new_size1 = original_size1 + sample_delay
     data_out = completa_con_ceros(data_out,new_size1,mode='backward')
