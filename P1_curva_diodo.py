@@ -55,8 +55,8 @@ output_channels = 1
 amplitud_V = 0.98 #V
 valor_rms = 0.7 # en V. Depende del nivel de volumen de parlante.
 amplitud = amplitud_V/valor_rms/np.sqrt(2)
-frec_ini = 200
-frec_fin = 200
+frec_ini = 500
+frec_fin = 500
 pasos_frec = 1
 delta_frec = (frec_fin-frec_ini)/(pasos_frec+1)
 data_out = np.zeros([pasos_frec,muestras,output_channels])
@@ -69,7 +69,7 @@ for i in range(pasos_frec):
     duration = duracion
     
     
-    output_signal = signalgen('ramp',fr,amp,duration,fs)
+    output_signal = signalgen('sine',fr,amp,duration,fs)
     data_out[i,:,0] = output_signal
         
         
@@ -100,7 +100,7 @@ calibracion_CH1_seno = [2.07*1e9, 1.41*1e5]
 data_in[:,:,0] = (data_in[:,:,0]-calibracion_CH0_seno[1])/(calibracion_CH0_seno[0])
 data_in[:,:,1] = (data_in[:,:,1]-calibracion_CH1_seno[1])/(calibracion_CH1_seno[0])
 
-resistencia = 560
+resistencia = 150
 delay = 2
 med = 1
 caida_tot = -data_in[0,int(fs*delay):int(fs*(delay+med)),0]
@@ -135,7 +135,7 @@ ax.grid(linestyle='--')
 ax.set_xlabel(u'Tensión diodo [V]')
 ax.set_ylabel(u'Corriente diodo [mA]')
 #ax.set_ylim([-0.20e-2,0.8e-2])
-ax.set_title('Curva del diodo utilizando una rampa')
+ax.set_title('Curva del diodo utilizando un seno')
 figname = os.path.join(carpeta_salida,subcarpeta_salida, 'curva_diodo.png')
 fig.savefig(figname, dpi=300)  
 plt.close(fig)
