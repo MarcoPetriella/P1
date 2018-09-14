@@ -94,7 +94,7 @@ def signalgen(type,fr,amp,duration,fs):
     return output
 
 
-def play_rec(fs,input_channels,data_out,corrige_retardos,offset_correlacion=0,steps_correlacion=0,delay=0.0,dato='int16'):
+def play_rec(fs,input_channels,data_out,corrige_retardos,offset_correlacion=0,steps_correlacion=0,delay=0.0,dato='int32'):
     
     
     """

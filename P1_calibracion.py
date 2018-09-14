@@ -34,7 +34,7 @@ params = {'legend.fontsize': 'large',
 pylab.rcParams.update(params)
 
 
-#%%
+
 
 carpeta_salida = 'Calibracion'
 subcarpeta_salida = '1'
@@ -47,11 +47,13 @@ if not os.path.exists(os.path.join(carpeta_salida,subcarpeta_salida)):
 #%%
 
 # Genero matriz de señales: ejemplo de barrido en frecuencias en el canal 0
+    
+    
 fs = 44100*8  
-duracion =5
+duracion = 30
 muestras = int(fs*duracion)
 input_channels = 2
-output_channels = 1
+output_channels = 2
 amplitud = 1 #V
 frec_ini = 500
 frec_fin = 500
@@ -69,6 +71,7 @@ for i in range(pasos_frec):
     
     output_signal = signalgen('sine',fr,amp,duration,fs)
     data_out[i,:,0] = output_signal
+    data_out[i,:,1] = output_signal
         
         
 # Realiza medicion
@@ -77,26 +80,39 @@ steps_correlacion = 0#int(fs*(1))
 data_in, retardos = play_rec(fs,input_channels,data_out,'no',offset_correlacion,steps_correlacion)
 
 
-fig = plt.figure(figsize=(14, 7), dpi=250)
-ax = fig.add_axes([.12, .15, .75, .8])
-ax1 = ax.twinx()
-ax.plot(data_in[0,:,0] ,alpha=0.8)
-ax1.plot(data_in[0,:,1] ,color='red',alpha=0.8)
+#fig = plt.figure(figsize=(14, 7), dpi=250)
+#ax = fig.add_axes([.12, .15, .75, .8])
+#ax1 = ax.twinx()
+#ax.plot(data_in[0,:,0] ,alpha=0.8)
+#ax1.plot(data_in[0,:,1] ,color='red',alpha=0.8)
 
+
+#%%
+# CALIBRACION PLACA MARCO PC CASA
+
+windows_nivel = np.array([10,20,30,40,50,60,70,80,90,100])
+tension_rms_v_ch0 = np.array([0.050, 0.142, 0.284, 0.441, 0.678, 0.884, 1.143, 1.484, 1.771, 2.280])
+amplitud_v_ch0 = tension_rms_v_ch0*np.sqrt(2)
+tension_rms_v_ch1 = np.array([0.050, 0.146, 0.291, 0.451, 0.693, 0.904, 1.170, 1.518, 1.812, 2.330])
+amplitud_v_ch1 = tension_rms_v_ch1*np.sqrt(2)
+
+#plt.plot(windows_nivel,amplitud_v_ch0,'o')
+#plt.plot(windows_nivel,amplitud_v_ch1,'o')
 
 #%%
 
 # Genero matriz de señales: ejemplo de barrido en frecuencias en el canal 0
+ind_nivel = 6
+mic_level = 70
 fs = 44100*8  
 duracion = 0.5
 muestras = int(fs*duracion)
 input_channels = 2
 output_channels = 2
 amplitud = 1
-valor_rms = 0.7 # en V. Depende del nivel de volumen de parlante: 0.7 para 60/100
-amplitud_V = amplitud*valor_rms*np.sqrt(2) #V
-frec_ini = 1000
-frec_fin = 1000
+amplitud_v_chs = [amplitud_v_ch0[ind_nivel],amplitud_v_ch1[ind_nivel]] #V
+frec_ini = 500
+frec_fin = 500
 pasos = 2
 delta_frec = (frec_fin-frec_ini)/(pasos+1)
 data_out = np.zeros([pasos,muestras,output_channels])
@@ -147,16 +163,17 @@ canales = ['CH0','CH1']
 
 for i in range(2):
     
-    for j in range(2):
+    for j in range(2): #por canal
         
-
-        ajuste = np.polyfit(data_out[i,int(fs*0.1):-int(fs*0.1),j]/amplitud*amplitud_V,data_in[i,int(fs*0.1):-int(fs*0.1),j],1)
+        amplitud_v = amplitud_v_chs[j]
+            
+        ajuste = np.polyfit(data_out[i,int(fs*0.1):-int(fs*0.1),j]/amplitud*amplitud_v,data_in[i,int(fs*0.1):-int(fs*0.1),j],1)
         
         
         fig = plt.figure(figsize=(14, 7), dpi=250)
         ax = fig.add_axes([.12, .15, .75, .8])        
-        ax.plot(data_out[i,int(fs*0.1):-int(fs*0.1),j]/amplitud*amplitud_V,data_in[i,int(fs*0.1):-int(fs*0.1),j],'--',color='blue',alpha=0.8,label='Señal')
-        ax.plot(data_out[i,int(fs*0.1):-int(fs*0.1),j]/amplitud*amplitud_V,data_out[i,int(fs*0.1):-int(fs*0.1),j]/amplitud*amplitud_V*ajuste[0]+ajuste[1],'--',color='red',alpha=0.8,label='Ajuste')
+        ax.plot(data_out[i,int(fs*0.1):-int(fs*0.1),j]/amplitud*amplitud_v,data_in[i,int(fs*0.1):-int(fs*0.1),j],'--',color='blue',alpha=0.8,label='Señal')
+        ax.plot(data_out[i,int(fs*0.1):-int(fs*0.1),j]/amplitud*amplitud_v,data_out[i,int(fs*0.1):-int(fs*0.1),j]/amplitud*amplitud_v*ajuste[0]+ajuste[1],'--',color='red',alpha=0.8,label='Ajuste')
         ax.grid(linestyle='--')
         ax.legend(loc=4)
         ax.text(0.1,0.8,'Ajuste: ax + b', transform=ax.transAxes)
@@ -164,8 +181,8 @@ for i in range(2):
         ax.text(0.1,0.70,'b: ' '{:6.2e}'.format(ajuste[1]) + ' [cuentas]', transform=ax.transAxes)
         ax.set_xlabel('Señal enviada [V]')
         ax.set_ylabel('Señal recibida [cuentas]')
-        ax.set_title(u'Señal enviada y adquirida en ' + canales[j] + ' utilizando función ' + formas[i] + '. Nivel de parlante en 60/100 y microfono 80/100' )
-        figname = os.path.join(carpeta_salida,subcarpeta_salida, 'ajuste_'+canales[j]+ '_'+formas[i]+'.png')
+        ax.set_title(u'Señal enviada y adquirida en ' + canales[j] + ' utilizando función ' + formas[i] + '. Nivel de parlante en '+ str(windows_nivel[ind_nivel]) +'/100 y microfono '+str(mic_level)+'/100' )
+        figname = os.path.join(carpeta_salida,subcarpeta_salida, 'ajuste_'+canales[j]+ '_'+formas[i]+'_wp'+ str(windows_nivel[ind_nivel]) +  '_wm'+str(mic_level)+'.png')
         fig.savefig(figname, dpi=300)  
         plt.close(fig)
 
@@ -173,15 +190,17 @@ for i in range(2):
         
         fig = plt.figure(figsize=(14, 7), dpi=250)
         ax = fig.add_axes([.12, .15, .75, .8])        
-        ax.plot(data_out[i,int(fs*0.1):-int(fs*0.1),j]/amplitud*amplitud_V,(data_in[i,int(fs*0.1):-int(fs*0.1),j]-ajuste[1])/ajuste[0],'--',color='red')       
+        ax.plot(data_out[i,int(fs*0.1):-int(fs*0.1),j]/amplitud*amplitud_v,(data_in[i,int(fs*0.1):-int(fs*0.1),j]-ajuste[1])/ajuste[0],'--',color='red')       
         ax.set_xlabel('Señal enviada [V]')
         ax.set_ylabel('Señal recibida [V]')   
         ax.grid(linestyle='--')
-        ax.set_title(u'Señal enviada y adquirida en ' + canales[j] + ' utilizando función ' + formas[i] + '. Nivel de parlante en 60/100 y microfono 80/100' )
-        figname = os.path.join(carpeta_salida,subcarpeta_salida, 'conversion_'+canales[j]+ '_'+formas[i]+'.png')
+        ax.set_title(u'Señal enviada y adquirida en ' + canales[j] + ' utilizando función ' + formas[i] + '. Nivel de parlante en '+ str(windows_nivel[ind_nivel]) +'/100 y microfono '+str(mic_level)+'/100' )
+        figname = os.path.join(carpeta_salida,subcarpeta_salida, 'conversion_'+canales[j]+ '_'+formas[i]+'_wp'+ str(windows_nivel[ind_nivel]) +  '_wm'+str(mic_level)+'.png')
         fig.savefig(figname, dpi=300)  
         plt.close(fig)        
 
+
+        np.save(os.path.join(carpeta_salida,subcarpeta_salida,formas[i] + '_' + canales[j] + '_wp'+ str(windows_nivel[ind_nivel]) +  '_wm'+str(mic_level)+'_ajuste.npy'),ajuste)
         
         
 #%% Medimos linealidad en amplitud
