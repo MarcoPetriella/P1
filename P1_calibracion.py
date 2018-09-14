@@ -41,36 +41,36 @@ pylab.rcParams.update(params)
 
 # Genero matriz de señales: ejemplo de barrido en frecuencias en el canal 0
     
-dato = 'int32'    
-fs = 44100*8  
-duracion = 30
-muestras = int(fs*duracion)
-input_channels = 2
-output_channels = 2
-amplitud = 1 #V
-frec_ini = 500
-frec_fin = 500
-pasos_frec = 1
-delta_frec = (frec_fin-frec_ini)/(pasos_frec+1)
-data_out = np.zeros([pasos_frec,muestras,output_channels])
-
-for i in range(pasos_frec):
-    parametros_signal = {}
-    fs = fs
-    amp = amplitud
-    fr = frec_ini + i*delta_frec
-    duration = duracion
-    
-    
-    output_signal = signalgen('sine',fr,amp,duration,fs)
-    data_out[i,:,0] = output_signal
-    data_out[i,:,1] = output_signal
-        
-        
-# Realiza medicion
-offset_correlacion = 0#int(fs*(1))
-steps_correlacion = 0#int(fs*(1))
-data_in, retardos = play_rec(fs,input_channels,data_out,'no',offset_correlacion,steps_correlacion,dato=dato)
+#dato = 'int16' 
+#fs = 44100*8  
+#duracion = 30
+#muestras = int(fs*duracion)
+#input_channels = 2
+#output_channels = 2
+#amplitud = 1 #V
+#frec_ini = 500
+#frec_fin = 500
+#pasos_frec = 1
+#delta_frec = (frec_fin-frec_ini)/(pasos_frec+1)
+#data_out = np.zeros([pasos_frec,muestras,output_channels])
+#
+#for i in range(pasos_frec):
+#    parametros_signal = {}
+#    fs = fs
+#    amp = amplitud
+#    fr = frec_ini + i*delta_frec
+#    duration = duracion
+#    
+#    
+#    output_signal = signalgen('sine',fr,amp,duration,fs)
+#    data_out[i,:,0] = output_signal
+#    data_out[i,:,1] = output_signal
+#        
+#        
+## Realiza medicion
+#offset_correlacion = 0#int(fs*(1))
+#steps_correlacion = 0#int(fs*(1))
+#data_in, retardos = play_rec(fs,input_channels,data_out,'no',offset_correlacion,steps_correlacion,dato=dato)
 
 
 #fig = plt.figure(figsize=(14, 7), dpi=250)
@@ -105,7 +105,7 @@ if not os.path.exists(os.path.join(carpeta_salida,subcarpeta_salida)):
 
 # Genero matriz de señales: ejemplo de barrido en frecuencias en el canal 0
 ind_nivel = 6
-mic_level = 70
+mic_level = 100
 fs = 44100*8  
 duracion = 0.5
 muestras = int(fs*duracion)
@@ -145,8 +145,8 @@ offset_correlacion = 0#int(fs*(1))
 steps_correlacion = 0#int(fs*(1))
 data_in, retardos = play_rec(fs,input_channels,data_out,'si',offset_correlacion,steps_correlacion,dato=dato)
 
-np.save(os.path.join(carpeta_salida,subcarpeta_salida, dato+'_data_out'),data_out)
-np.save(os.path.join(carpeta_salida,subcarpeta_salida, dato+'_data_in'),data_in)
+np.save(os.path.join(carpeta_salida,subcarpeta_salida, dato+'_wp'+ str(windows_nivel[ind_nivel]) +  '_wm'+str(mic_level)+'_data_out'),data_out)
+np.save(os.path.join(carpeta_salida,subcarpeta_salida, dato+'_wp'+ str(windows_nivel[ind_nivel]) +  '_wm'+str(mic_level)+'_data_in'),data_in)
 
 
 
@@ -157,8 +157,8 @@ np.save(os.path.join(carpeta_salida,subcarpeta_salida, dato+'_data_in'),data_in)
 # En este nivel de parlante la señal de amplitud 1 (1V) ocupa todo el rango de medición
 # Esto vale para la placa de pc de escritorio de casa de Marco y windows 10
 
-data_out = np.load(os.path.join(carpeta_salida,subcarpeta_salida, dato+'_data_out.npy'))
-data_in = np.load(os.path.join(carpeta_salida,subcarpeta_salida, dato+'_data_in.npy'))
+data_out = np.load(os.path.join(carpeta_salida,subcarpeta_salida, dato+'_wp'+ str(windows_nivel[ind_nivel]) +  '_wm'+str(mic_level)+'_data_out.npy'))
+data_in = np.load(os.path.join(carpeta_salida,subcarpeta_salida, dato+'_wp'+ str(windows_nivel[ind_nivel]) +  '_wm'+str(mic_level)+'_data_in.npy'))
 
 formas = ['Seno','Rampa']
 canales = ['CH0','CH1']
