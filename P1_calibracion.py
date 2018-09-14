@@ -36,19 +36,12 @@ pylab.rcParams.update(params)
 
 
 
-carpeta_salida = 'Calibracion'
-subcarpeta_salida = '1'
-if not os.path.exists(carpeta_salida):
-    os.mkdir(carpeta_salida)
-    
-if not os.path.exists(os.path.join(carpeta_salida,subcarpeta_salida)):
-    os.mkdir(os.path.join(carpeta_salida,subcarpeta_salida))     
     
 #%%
 
 # Genero matriz de señales: ejemplo de barrido en frecuencias en el canal 0
     
-    
+dato = 'int32'    
 fs = 44100*8  
 duracion = 30
 muestras = int(fs*duracion)
@@ -77,7 +70,7 @@ for i in range(pasos_frec):
 # Realiza medicion
 offset_correlacion = 0#int(fs*(1))
 steps_correlacion = 0#int(fs*(1))
-data_in, retardos = play_rec(fs,input_channels,data_out,'no',offset_correlacion,steps_correlacion)
+data_in, retardos = play_rec(fs,input_channels,data_out,'no',offset_correlacion,steps_correlacion,dato=dato)
 
 
 #fig = plt.figure(figsize=(14, 7), dpi=250)
@@ -100,6 +93,15 @@ amplitud_v_ch1 = tension_rms_v_ch1*np.sqrt(2)
 #plt.plot(windows_nivel,amplitud_v_ch1,'o')
 
 #%%
+dato = 'int16' 
+
+carpeta_salida = 'Calibracion'
+subcarpeta_salida = dato
+if not os.path.exists(carpeta_salida):
+    os.mkdir(carpeta_salida)
+    
+if not os.path.exists(os.path.join(carpeta_salida,subcarpeta_salida)):
+    os.mkdir(os.path.join(carpeta_salida,subcarpeta_salida))     
 
 # Genero matriz de señales: ejemplo de barrido en frecuencias en el canal 0
 ind_nivel = 6
@@ -141,10 +143,10 @@ for i in range(pasos):
 # Realiza medicion
 offset_correlacion = 0#int(fs*(1))
 steps_correlacion = 0#int(fs*(1))
-data_in, retardos = play_rec(fs,input_channels,data_out,'si',offset_correlacion,steps_correlacion)
+data_in, retardos = play_rec(fs,input_channels,data_out,'si',offset_correlacion,steps_correlacion,dato=dato)
 
-np.save(os.path.join(carpeta_salida,subcarpeta_salida, 'data_out'),data_out)
-np.save(os.path.join(carpeta_salida,subcarpeta_salida, 'data_in'),data_in)
+np.save(os.path.join(carpeta_salida,subcarpeta_salida, dato+'_data_out'),data_out)
+np.save(os.path.join(carpeta_salida,subcarpeta_salida, dato+'_data_in'),data_in)
 
 
 
@@ -155,8 +157,8 @@ np.save(os.path.join(carpeta_salida,subcarpeta_salida, 'data_in'),data_in)
 # En este nivel de parlante la señal de amplitud 1 (1V) ocupa todo el rango de medición
 # Esto vale para la placa de pc de escritorio de casa de Marco y windows 10
 
-data_out = np.load(os.path.join(carpeta_salida,subcarpeta_salida, 'data_out.npy'))
-data_in = np.load(os.path.join(carpeta_salida,subcarpeta_salida, 'data_in.npy'))
+data_out = np.load(os.path.join(carpeta_salida,subcarpeta_salida, dato+'_data_out.npy'))
+data_in = np.load(os.path.join(carpeta_salida,subcarpeta_salida, dato+'_data_in.npy'))
 
 formas = ['Seno','Rampa']
 canales = ['CH0','CH1']
@@ -182,7 +184,7 @@ for i in range(2):
         ax.set_xlabel('Señal enviada [V]')
         ax.set_ylabel('Señal recibida [cuentas]')
         ax.set_title(u'Señal enviada y adquirida en ' + canales[j] + ' utilizando función ' + formas[i] + '. Nivel de parlante en '+ str(windows_nivel[ind_nivel]) +'/100 y microfono '+str(mic_level)+'/100' )
-        figname = os.path.join(carpeta_salida,subcarpeta_salida, 'ajuste_'+canales[j]+ '_'+formas[i]+'_wp'+ str(windows_nivel[ind_nivel]) +  '_wm'+str(mic_level)+'.png')
+        figname = os.path.join(carpeta_salida,subcarpeta_salida, 'ajuste_'+canales[j]+ '_'+formas[i]+'_wp'+ str(windows_nivel[ind_nivel]) +  '_wm'+str(mic_level)+'_'+dato+'.png')
         fig.savefig(figname, dpi=300)  
         plt.close(fig)
 
@@ -195,12 +197,12 @@ for i in range(2):
         ax.set_ylabel('Señal recibida [V]')   
         ax.grid(linestyle='--')
         ax.set_title(u'Señal enviada y adquirida en ' + canales[j] + ' utilizando función ' + formas[i] + '. Nivel de parlante en '+ str(windows_nivel[ind_nivel]) +'/100 y microfono '+str(mic_level)+'/100' )
-        figname = os.path.join(carpeta_salida,subcarpeta_salida, 'conversion_'+canales[j]+ '_'+formas[i]+'_wp'+ str(windows_nivel[ind_nivel]) +  '_wm'+str(mic_level)+'.png')
+        figname = os.path.join(carpeta_salida,subcarpeta_salida, 'conversion_'+canales[j]+ '_'+formas[i]+'_wp'+ str(windows_nivel[ind_nivel]) +  '_wm'+str(mic_level)+'_'+dato+'.png')
         fig.savefig(figname, dpi=300)  
         plt.close(fig)        
 
 
-        np.save(os.path.join(carpeta_salida,subcarpeta_salida,formas[i] + '_' + canales[j] + '_wp'+ str(windows_nivel[ind_nivel]) +  '_wm'+str(mic_level)+'_ajuste.npy'),ajuste)
+        np.save(os.path.join(carpeta_salida,subcarpeta_salida,formas[i] + '_' + canales[j] + '_wp'+ str(windows_nivel[ind_nivel]) +  '_wm'+str(mic_level)+'_'+dato+'_ajuste.npy'),ajuste)
         
         
 #%% Medimos linealidad en amplitud

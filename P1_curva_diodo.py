@@ -57,6 +57,7 @@ if not os.path.exists(os.path.join(carpeta_salida,subcarpeta_salida)):
     
 
 # Genero matriz de señales: ejemplo de barrido en frecuencias en el canal 0
+dato = 'int16'    
 ind_nivel = 6
 mic_level = 70
 fs = 44100*8  
@@ -93,7 +94,7 @@ for i in range(pasos_frec):
 # Realiza medicion
 offset_correlacion = 0#int(fs*(1))
 steps_correlacion = 0#int(fs*(1))
-data_in, retardos = play_rec(fs,input_channels,data_out,'si',offset_correlacion,steps_correlacion)
+data_in, retardos = play_rec(fs,input_channels,data_out,'si',offset_correlacion,steps_correlacion,dato=dato)
 
 np.save(os.path.join(carpeta_salida,subcarpeta_salida, 'data_out'),data_out)
 np.save(os.path.join(carpeta_salida,subcarpeta_salida, 'data_in'),data_in)
@@ -103,19 +104,21 @@ np.save(os.path.join(carpeta_salida,subcarpeta_salida, 'data_in'),data_in)
 data_out = np.load(os.path.join(carpeta_salida,subcarpeta_salida, 'data_out.npy'))
 data_in = np.load(os.path.join(carpeta_salida,subcarpeta_salida, 'data_in.npy'))
 
-calibracion_CH0_seno = np.load(os.path.join('Calibracion','1', 'Seno_CH0_wp'+ str(windows_nivel[ind_nivel]) +  '_wm'+str(mic_level)+'_ajuste.npy'))
-calibracion_CH1_seno = np.load(os.path.join('Calibracion','1', 'Seno_CH1_wp'+ str(windows_nivel[ind_nivel]) +  '_wm'+str(mic_level)+'_ajuste.npy'))
+calibracion_CH0_seno = np.load(os.path.join('Calibracion',dato, 'Seno_CH0_wp'+ str(windows_nivel[ind_nivel]) +  '_wm'+str(mic_level)+'_'+dato+'_ajuste.npy'))
+calibracion_CH1_seno = np.load(os.path.join('Calibracion',dato, 'Seno_CH1_wp'+ str(windows_nivel[ind_nivel]) +  '_wm'+str(mic_level)+'_'+dato+'_ajuste.npy'))
 
 # Calibracion de los canales
 data_in[:,:,0] = (data_in[:,:,0]-calibracion_CH0_seno[1])/(calibracion_CH0_seno[0])
 data_in[:,:,1] = (data_in[:,:,1]-calibracion_CH1_seno[1])/(calibracion_CH1_seno[0])
 
-resistencia = 10.4
+offset = 0.198 #R150
+
+resistencia = 149
 delay = 3
 med = 1
-caida_tot = data_in[0,int(fs*delay):int(fs*(delay+med)),0]
-caida_diodo = data_in[0,int(fs*delay):int(fs*(delay+med)),1]
-caida_res = caida_tot - caida_diodo
+caida_tot = -data_in[0,int(fs*delay):int(fs*(delay+med)),0]
+caida_res = -data_in[0,int(fs*delay):int(fs*(delay+med)),1] +offset#+ np.max(data_in[0,int(fs*delay):int(fs*(delay+med)),1])
+caida_diodo = caida_tot - caida_res
 i_res = caida_res/resistencia
 
 
@@ -144,9 +147,10 @@ ax.legend()
 ax.grid(linestyle='--')
 ax.set_xlabel(u'Tensión diodo [V]')
 ax.set_ylabel(u'Corriente diodo [mA]')
-#ax.set_ylim([-0.20e-2,0.8e-2])
+ax.set_xlim([-1.5,1])
+ax.set_ylim([-1,11])
 ax.set_title('Curva del diodo 1N4007 utilizando un seno')
-figname = os.path.join(carpeta_salida,subcarpeta_salida, 'curva_diodo_1N4007.png')
+figname = os.path.join(carpeta_salida,subcarpeta_salida, 'curva_diodo_1N4007_'+str(resistencia)+'.png')
 fig.savefig(figname, dpi=300)  
 plt.close(fig)
 
@@ -159,7 +163,7 @@ fig = plt.figure(figsize=(14, 7), dpi=250)
 ax = fig.add_axes([.12, .15, .75, .8])
 ax1 = ax.twinx()
 ax.plot(caida_tot ,alpha=0.8)
-ax1.plot(caida_diodo ,color='red',alpha=0.8)
+ax1.plot(caida_res ,color='red',alpha=0.8)
 #ax1.plot(caida_diodo ,color='red',alpha=0.8)
 
 #

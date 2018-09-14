@@ -327,7 +327,7 @@ def completa_con_ceros(data_out,new_size1,mode='forward'):
     return data_out_corrected
 
 
-def sincroniza_con_trigger(trigger,data_in,offset_correlacion=0,steps_correlacion=0):
+def sincroniza_con_trigger(trigger,data_in,offset_correlacion=0,steps_correlacion=0, ch=0):
     
     """
     Esta función corrige el retardo de las mediciones adquiridas con la función play_rec. Para ello utiliza la señal de 
@@ -365,8 +365,8 @@ def sincroniza_con_trigger(trigger,data_in,offset_correlacion=0,steps_correlacio
     retardos = np.array([])
     
     # Defino la matriz de trigger enviada y adquirida
-    trigger_send = trigger[:,:,0]
-    trigger_acq = data_in[:,:,0]  
+    trigger_send = trigger[:,:,ch]
+    trigger_acq = data_in[:,:,ch]  
 
     # Array donde se guarda la señal de trigger digital
     comp = np.zeros(trigger_acq.shape[1])  

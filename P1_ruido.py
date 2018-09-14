@@ -55,7 +55,8 @@ amplitud_v_chs = np.array([amplitud_v_ch0,amplitud_v_ch1])
 # Genero matriz de señales: ejemplo de barrido en frecuencias en el canal 0
 ind_nivel = 6
 mic_level = 70    
-    
+
+dato = 'int16'    
 fs = 44100*8  
 duracion_trigger = 0.5
 duracion_ruido = 5
@@ -79,28 +80,30 @@ output_signal_ch1 = np.append(output_signal_ch1,np.zeros(int(fs*duracion_ruido))
 data_out[0,:,0] = output_signal_ch0
 data_out[0,:,1] = output_signal_ch1
         
-        
-# Realiza medicion
-offset_correlacion = 0#int(fs*(1))
-steps_correlacion = 0#int(fs*(1))
-data_in, retardos = play_rec(fs,input_channels,data_out,'si',offset_correlacion,steps_correlacion,dato='int32')
 
 carpeta_salida = 'Ruido'
-subcarpeta_salida = 'int32'
+subcarpeta_salida = dato
 if not os.path.exists(carpeta_salida):
     os.mkdir(carpeta_salida)
     
 if not os.path.exists(os.path.join(carpeta_salida,subcarpeta_salida)):
     os.mkdir(os.path.join(carpeta_salida,subcarpeta_salida))  
 
+
+calibracion_CH0_seno = np.load(os.path.join('Calibracion',dato, 'Seno_CH0_wp'+ str(windows_nivel[ind_nivel]) +  '_wm'+str(mic_level)+'_'+dato+'_ajuste.npy'))
+calibracion_CH1_seno = np.load(os.path.join('Calibracion',dato, 'Seno_CH1_wp'+ str(windows_nivel[ind_nivel]) +  '_wm'+str(mic_level)+'_'+dato+'_ajuste.npy'))
+
+
+# Realiza medicion
+offset_correlacion = 0#int(fs*(1))
+steps_correlacion = 0#int(fs*(1))
+data_in, retardos = play_rec(fs,input_channels,data_out,'si',offset_correlacion,steps_correlacion,dato=dato)
+
 np.save(os.path.join(carpeta_salida,subcarpeta_salida, 'data_out'),data_out)
 np.save(os.path.join(carpeta_salida,subcarpeta_salida, 'data_in'),data_in)
 
 data_out = np.load(os.path.join(carpeta_salida,subcarpeta_salida, 'data_out.npy'))
 data_in = np.load(os.path.join(carpeta_salida,subcarpeta_salida, 'data_in.npy'))
-
-calibracion_CH0_seno = np.load(os.path.join('Calibracion','1', 'Seno_CH0_wp'+ str(windows_nivel[ind_nivel]) +  '_wm'+str(mic_level)+'_ajuste.npy'))
-calibracion_CH1_seno = np.load(os.path.join('Calibracion','1', 'Seno_CH1_wp'+ str(windows_nivel[ind_nivel]) +  '_wm'+str(mic_level)+'_ajuste.npy'))
 
 # Calibracion de los canales
 data_in_cal = np.zeros([data_in.shape[0],data_in.shape[1],data_in.shape[2]])
@@ -117,17 +120,17 @@ data_in_cal_med = data_in_cal[0,int(fs*delay):int(fs*(delay+med)),:]
 np.std(data_in_cal_med[:,0])
 np.std(data_in_cal_med[:,1])
 
-label0='CH0 - STD: ' + '{:6.3f}'.format(np.std(data_in_cal_med[:,0]*1000)) + ' mV - ' + '{:6.0f}'.format(np.std(data_in_med[:,0])) + ' cuentas'
-label1='CH1 - STD: ' + '{:6.3f}'.format(np.std(data_in_cal_med[:,1]*1000)) + ' mV - ' + '{:6.0f}'.format(np.std(data_in_med[:,1])) + ' cuentas'
+label0='CH0 - STD: ' + '{:6.3f}'.format(np.std(data_in_cal_med[:,0]*1000)) + ' mV -' + '{:6.1f}'.format(np.std(data_in_med[:,0])) + ' cuentas'
+label1='CH1 - STD: ' + '{:6.3f}'.format(np.std(data_in_cal_med[:,1]*1000)) + ' mV -' + '{:6.1f}'.format(np.std(data_in_med[:,1])) + ' cuentas'
 
 fig = plt.figure(figsize=(14, 7), dpi=250)
 ax = fig.add_axes([.12, .15, .75, .8])
-ax.hist(data_in_cal_med[:,0],bins=10,rwidth=0.9,label=label0,alpha=0.7,align ='mid')
+ax.hist(data_in_cal_med[:,0],bins=20,rwidth=0.9,label=label0,alpha=0.7,align ='mid')
 ax.grid(linestyle='--')
 ax.set_xlabel(u'Tensión [V]')
 ax.set_ylabel(u'Frecuencia [cts.]')
 ax.legend()
-ax.set_title(u'Histograma de ruido en tensión del CH0. Tipo de dato int32')
+ax.set_title(u'Histograma de ruido en tensión del CH0')
 figname = os.path.join(carpeta_salida,subcarpeta_salida, 'ruido_v_ch0.png')
 fig.savefig(figname, dpi=300)  
 plt.close(fig)
@@ -135,12 +138,12 @@ plt.close(fig)
 
 fig = plt.figure(figsize=(14, 7), dpi=250)
 ax = fig.add_axes([.12, .15, .75, .8])
-ax.hist(data_in_med[:,0],bins=10,rwidth=0.9,label=label0,alpha=0.7,align ='mid')
+ax.hist(data_in_med[:,0],bins=20,rwidth=0.9,label=label0,alpha=0.7,align ='mid')
 ax.grid(linestyle='--')
 ax.set_xlabel(u'Cuentas')
 ax.set_ylabel(u'Frecuencia [cts.]')
 ax.legend()
-ax.set_title(u'Histograma de ruido en cuentas del CH0. Tipo de dato int32')
+ax.set_title(u'Histograma de ruido en cuentas del CH0')
 figname = os.path.join(carpeta_salida,subcarpeta_salida, 'ruido_cuentas_ch0.png')
 fig.savefig(figname, dpi=300)  
 plt.close(fig)
@@ -148,12 +151,12 @@ plt.close(fig)
 
 fig = plt.figure(figsize=(14, 7), dpi=250)
 ax = fig.add_axes([.12, .15, .75, .8])
-ax.hist(data_in_cal_med[:,1],bins=10,rwidth=0.9,label=label1,alpha=0.7,align ='mid')
+ax.hist(data_in_cal_med[:,1],bins=20,rwidth=0.9,label=label1,alpha=0.7,align ='mid')
 ax.grid(linestyle='--')
 ax.set_xlabel(u'Tensión [V]')
 ax.set_ylabel(u'Frecuencia [cts.]')
 ax.legend()
-ax.set_title(u'Histograma de ruido en tensión del CH1. Tipo de dato int32')
+ax.set_title(u'Histograma de ruido en tensión del CH1')
 figname = os.path.join(carpeta_salida,subcarpeta_salida, 'ruido_v_ch1.png')
 fig.savefig(figname, dpi=300)  
 plt.close(fig)
@@ -161,12 +164,12 @@ plt.close(fig)
 
 fig = plt.figure(figsize=(14, 7), dpi=250)
 ax = fig.add_axes([.12, .15, .75, .8])
-ax.hist(data_in_med[:,1],bins=10,rwidth=0.9,label=label1,alpha=0.7,align ='mid')
+ax.hist(data_in_med[:,1],bins=20,rwidth=0.9,label=label1,alpha=0.7,align ='mid')
 ax.grid(linestyle='--')
 ax.set_xlabel(u'Cuentas')
 ax.set_ylabel(u'Frecuencia [cts.]')
 ax.legend()
-ax.set_title(u'Histograma de ruido en cuentas del CH1. Tipo de dato int32')
+ax.set_title(u'Histograma de ruido en cuentas del CH1')
 figname = os.path.join(carpeta_salida,subcarpeta_salida, 'ruido_cuentas_ch1.png')
 fig.savefig(figname, dpi=300)  
 plt.close(fig)
