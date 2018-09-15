@@ -414,3 +414,91 @@ def sincroniza_con_trigger(trigger,data_in,offset_correlacion=0,steps_correlacio
         
     return data_in_corrected, retardos
 
+
+
+def sincroniza_con_trigger1(trigger,data_in,offset_correlacion=0,steps_correlacion=0, ch=0):
+    
+    """
+    Esta función corrige el retardo de las mediciones adquiridas con la función play_rec. Para ello utiliza la señal de 
+    trigger enviada y adquirida en el canal 0 de la placa de audio, y sincroniza las mediciones de todos los canales de entrada. 
+    El retardo se determina a partir de realizar la correlación cruzada entre la señal enviada y adquirida, y encontrando la posición
+    del máximo del resultado.
+    
+    
+    Parámetros:
+    -----------
+    trigger: numpy array, array de tamaño [cantidad_de_pasos][muestras_por_pasos_trigger][trigger_channels]
+    data_in: numpy array, array de tamaño [cantidad_de_pasos][muestras_por_pasos_input][input_channels]
+    offset_correlacion: int, muestra (tiempo) del trigger a partir de cual se hace la correlacion
+    steps_correlacion: int, muestras (tiempo) del trigger con el cual se hace la correlacion
+    
+    Salida (returns):
+    -----------------
+    data_in_corrected : numpy array, señal de salida con retardo corregido de tamaño [cantidad_de_pasos][muestras_por_pasos_trigger][input_channels]. 
+                         El tamaño de la segunda dimensión es la misma que la de data_trigger.
+    retardos : numpy array, array con los retardos de tamaño [cantidad_de_pasos].
+    
+    Autores: Leslie Cusato, Marco Petriella   
+    """
+    
+    print (u'\n Inicio corrección \n Presione Ctrl + c para interrumpir.')
+ 
+#    trigger = trigger.astype(np.float32)
+#    data_in = data_in.astype(np.float32)
+    
+    # Cantidad de muestras extras que se toman
+    extra = 0
+    
+    # Estas son las salidas    
+    data_in_corrected = np.zeros([trigger.shape[0],trigger.shape[1]+extra,data_in.shape[2]])
+    retardos = np.array([])
+    
+    # Defino la matriz de trigger enviada y adquirida
+    trigger_send = trigger[:,:,ch]
+    trigger_acq = data_in[:,:,ch]  
+
+    # Array donde se guarda la señal de trigger digital
+    comp = np.zeros(trigger_acq.shape[1])  
+
+    if steps_correlacion == 0:
+        steps_correlacion = trigger_send.shape[1]     
+    
+    tiempo_ini = datetime.datetime.now()
+    errores = []         
+    for i in range(data_in.shape[0]):
+        try:
+            
+            # Correlacion con la función de numpy
+#            corr = np.correlate(trigger_acq[i,:] - np.mean(trigger_acq[i,:]),trigger_send[i,offset_correlacion:offset_correlacion+steps_correlacion] - np.mean(trigger_send[i,offset_correlacion:offset_correlacion+steps_correlacion]))
+#            pos_max = np.argmax(corr) - offset_correlacion
+            
+            # Uso correlación cruzada con FFT que es mucho mas rapida que la de numpy
+            comp[0:steps_correlacion] = trigger_send[i,offset_correlacion:offset_correlacion+steps_correlacion]
+            corr = cross_correlation_using_fft(trigger_acq[i,:] - np.mean(trigger_acq[i,:]),comp-np.mean(comp))
+            pos_max = np.argmax(corr)-int(len(corr)/2)-offset_correlacion+1
+            
+            retardos = np.append(retardos,pos_max)
+#            plt.plot(corr)
+#            print(pos_max)
+
+            
+            barra_progreso(i,data_in.shape[0],u'Progreso corrección',tiempo_ini) 
+            
+            if pos_max >= 0 and pos_max+trigger_send.shape[1]+extra < data_in.shape[1]:             
+                for j in range(data_in.shape[2]):
+                    data_in_corrected[i,:,j] = data_in[i,pos_max:pos_max+trigger_send.shape[1]+extra,j]
+            else:
+                errores.append(i)
+                for j in range(data_in.shape[2]):
+                    data_in_corrected[i,:,j] = np.full_like(data_in_corrected[i,:,j], np.nan)
+                    
+        except KeyboardInterrupt:
+            print (u'\n \n Proceso corrección interrumpido \n')
+            break
+
+                
+    for i in errores:
+        print(u'- Correlación fuera de los límites en el paso ' + str(i) + '. Atención! la salida se completa con NaNs. \n')
+        
+        
+    return data_in_corrected, retardos, corr

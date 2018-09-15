@@ -269,3 +269,142 @@ plt.close(fig)
 
 
 #%%
+# EJEMPLO DE ADQUISICION
+
+from P1_funciones import sincroniza_con_trigger1
+
+
+windows_nivel = np.array([10,20,30,40,50,60,70,80,90,100])
+tension_rms_v_ch0 = np.array([0.050, 0.142, 0.284, 0.441, 0.678, 0.884, 1.143, 1.484, 1.771, 2.280])
+amplitud_v_ch0 = tension_rms_v_ch0*np.sqrt(2)
+tension_rms_v_ch1 = np.array([0.050, 0.146, 0.291, 0.451, 0.693, 0.904, 1.170, 1.518, 1.812, 2.330])
+amplitud_v_ch1 = tension_rms_v_ch1*np.sqrt(2)
+
+amplitud_v_chs = np.array([amplitud_v_ch0,amplitud_v_ch1])
+
+
+dato = 'int16' 
+
+carpeta_salida = 'Delay'
+subcarpeta_salida = 'ejemplo'
+if not os.path.exists(carpeta_salida):
+    os.mkdir(carpeta_salida)
+    
+if not os.path.exists(os.path.join(carpeta_salida,subcarpeta_salida)):
+    os.mkdir(os.path.join(carpeta_salida,subcarpeta_salida))     
+
+# Genero matriz de señales: ejemplo de barrido en frecuencias en el canal 0
+ind_nivel = 6
+mic_level = 70
+fs = 44100*8  
+duracion = 0.3
+muestras = int(fs*duracion)
+input_channels = 2
+output_channels = 2
+amplitud_v_chs_out = [1.0,1.0] #V
+amplitud_chs = []
+for i in range(output_channels):
+    amplitud_chs.append(amplitud_v_chs_out[i]/amplitud_v_chs[i,ind_nivel])
+    
+frec_ini = 71
+frec_fin = 71
+pasos = 1
+delta_frec = (frec_fin-frec_ini)/(pasos+1)
+data_out = np.zeros([pasos,muestras,output_channels])
+
+for i in range(pasos):
+    parametros_signal = {}
+    fs = fs
+    amp = amplitud_chs[0]
+    fr = frec_ini + i*delta_frec
+    duration = duracion
+    
+    output_signal = signalgen('sine',fr,amp,duration,fs)
+    data_out[i,0:int(fs*0.105),0] = output_signal[0:int(fs*0.105)]
+        
+    output_signal = signalgen('ramp',fr,amp,duration,fs)
+    data_out[i,:,1] = output_signal
+
+data_in, retardos = play_rec(fs,input_channels,data_out,'no',dato=dato)
+data_in_corrected, retardos, corr = sincroniza_con_trigger1(data_out,data_in)
+
+
+#%%
+
+t_out = np.arange(data_out.shape[1])/fs
+t_in = np.arange(data_in.shape[1])/fs
+t_in_corrected = np.arange(data_in_corrected.shape[1])/fs
+t_corr = np.arange(corr.shape[0])/fs
+
+
+fig = plt.figure(figsize=(14, 7), dpi=250)
+ax = fig.add_axes([.12, .12, .75, .37])
+ax1 = fig.add_axes([.12, .56, .75, .37])
+ax.plot(t_out,data_out[0,:,1],color='red',alpha=0.8,label='CH1')
+ax1.plot(t_out,data_out[0,:,0],color='blue',alpha=0.8,label='CH0')
+ax.legend()
+ax1.legend()
+ax.grid(linestyle='--')
+ax1.grid(linestyle='--')
+ax.set_xlabel('Tiempo [seg]')
+ax.set_ylabel('Amplitud [u.a.]')
+ax1.set_ylabel('Amplitud [u.a.]')
+ax1.set_title('Señal sintética enviada')
+figname = os.path.join(carpeta_salida,subcarpeta_salida, 'senal_sintetica.png')
+fig.savefig(figname, dpi=300)  
+plt.close(fig)
+
+fig = plt.figure(figsize=(14, 7), dpi=250)
+ax = fig.add_axes([.12, .12, .75, .37])
+ax1 = fig.add_axes([.12, .56, .75, .37])
+ax.plot(t_in,data_in[0,:,1],color='red',alpha=0.8,label='CH1')
+ax1.plot(t_in,data_in[0,:,0],color='blue',alpha=0.8,label='CH0')
+ax.axvline(retardos[0]/fs,linestyle='--',label='retardo')
+ax1.axvline(retardos[0]/fs,linestyle='--',label='retardo')
+ax.legend()
+ax1.legend()
+ax.grid(linestyle='--')
+ax1.grid(linestyle='--')
+ax.set_xlabel('Tiempo [seg]')
+ax.set_ylabel('Amplitud [u.a.]')
+ax1.set_ylabel('Amplitud [u.a.]')
+ax1.set_title('Señal adquirida sin corregir retardo')
+figname = os.path.join(carpeta_salida,subcarpeta_salida, 'senal_adquirida.png')
+fig.savefig(figname, dpi=300)  
+plt.close(fig)
+
+fig = plt.figure(figsize=(14, 7), dpi=250)
+ax = fig.add_axes([.12, .12, .75, .37])
+ax1 = fig.add_axes([.12, .56, .75, .37])
+ax.plot(t_in_corrected,data_in_corrected[0,:,1],color='red',alpha=0.8,label='CH1')
+ax1.plot(t_in_corrected,data_in_corrected[0,:,0],color='blue',alpha=0.8,label='CH0')
+ax.legend()
+ax1.legend()
+ax.grid(linestyle='--')
+ax1.grid(linestyle='--')
+ax.set_xlabel('Tiempo [seg]')
+ax.set_ylabel('Amplitud [u.a.]')
+ax1.set_ylabel('Amplitud [u.a.]')
+ax1.set_title('Señal adquirida con retardo corregido')
+figname = os.path.join(carpeta_salida,subcarpeta_salida, 'senal_adquirida_corregida.png')
+fig.savefig(figname, dpi=300)  
+plt.close(fig)
+
+
+ind_max = np.argmax(corr)
+
+fig = plt.figure(figsize=(14, 7), dpi=250)
+ax = fig.add_axes([.12, .12, .75, .8])
+ax.plot(t_corr,corr,color='red',alpha=0.8,label=u'Correlación cruzada CH0')
+ax.axvline(t_corr[len(t_corr)-1]/2,linewidth=2,linestyle='--',color='blue',label=u'duración/2',alpha=0.8)
+ax.axvline(t_corr[ind_max],linewidth=2,linestyle='--',color='green',label=u'máximo correlación',alpha=0.8)
+ax.text(t_corr[ind_max]-0.12,np.max(corr)*0.95,'Retardo: ', horizontalalignment='left')
+ax.text(t_corr[ind_max]-0.12,np.max(corr)*0.87,'{:6.3f}'.format(retardos[0]/fs) + ' sec' , horizontalalignment='left')
+ax.legend()
+ax.grid(linestyle='--')
+ax.set_xlabel('Tiempo [seg]')
+ax.set_ylabel('Amplitud [u.a.]')
+ax.set_title('Correlación cruzada entre señal digital de salida y señal adquirida del CH0')
+figname = os.path.join(carpeta_salida,subcarpeta_salida, 'correlacion_cruzada.png')
+fig.savefig(figname, dpi=300)  
+plt.close(fig)
