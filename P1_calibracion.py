@@ -206,6 +206,40 @@ for i in range(2):
         np.save(os.path.join(carpeta_salida,subcarpeta_salida,formas[i] + '_' + canales[j] + '_wp'+ str(windows_nivel[ind_nivel]) +  '_wm'+str(mic_level)+'_'+dato+'_ajuste.npy'),ajuste)
         
         
+#%%
+
+mic_levels = [10,20,30,40,50,60,70,80,90,100]
+
+   
+rango_ch0 = np.array([])
+rango_ch1 = np.array([])
+
+for i,mic_level in enumerate(mic_levels):
+    
+    calibracion_CH0_seno = np.load(os.path.join('Calibracion',dato, 'Seno_CH0_wp'+ str(windows_nivel[ind_nivel]) +  '_wm'+str(mic_level)+'_'+dato+'_ajuste.npy'))
+    calibracion_CH1_seno = np.load(os.path.join('Calibracion',dato, 'Seno_CH1_wp'+ str(windows_nivel[ind_nivel]) +  '_wm'+str(mic_level)+'_'+dato+'_ajuste.npy'))   
+    
+    rango_ch0 = np.append(rango_ch0,2**15/calibracion_CH0_seno[0])
+    rango_ch1 = np.append(rango_ch1,2**15/calibracion_CH1_seno[0])
+    
+
+mic_levels_array = np.asarray(mic_levels)
+
+fig = plt.figure(figsize=(14, 7), dpi=250)
+ax = fig.add_axes([.12, .15, .75, .8])  
+ax.semilogy(mic_levels_array,rango_ch0,'o',label='CH0',alpha=0.7)
+ax.semilogy(mic_levels_array,rango_ch1,'o',label='CH1',alpha=0.7)
+ax.grid(linestyle='--')    
+ax.legend()
+ax.set_ylim([1,100])
+ax.set_xlabel('Nivel de micrófono')
+ax.set_ylabel(u'Rango positivo receptor [V]')   
+ax.set_title(u'Rango del receptor en función del nivel del micrófono.')   
+figname = os.path.join(carpeta_salida, 'respuesta_por_nivel_microfono_rango.png')
+fig.savefig(figname, dpi=300)  
+plt.close(fig)    
+        
+
 #%% Medimos linealidad en amplitud
 #Linealidad para seno
 
@@ -250,6 +284,7 @@ for i,mic_level in enumerate(mic_levels):
     data_out = np.load(os.path.join(carpeta_salida,subcarpeta_salida, dato+'_wp'+ str(windows_nivel[ind_nivel]) +  '_wm'+str(mic_level)+'_data_out.npy'))
     data_in = np.load(os.path.join(carpeta_salida,subcarpeta_salida, dato+'_wp'+ str(windows_nivel[ind_nivel]) +  '_wm'+str(mic_level)+'_data_in.npy'))
   
+    amplitud_v = amplitud_v_chs[0]
     ax.plot(data_out[0,int(fs*0.1):-int(fs*0.1),0]/amplitud*amplitud_v,data_in[0,int(fs*0.1):-int(fs*0.1),0],'--',color=cmap(float(i)/len(mic_levels)),label='Nivel de mic:'+str(mic_level),alpha=0.7)
     
 ax.axhline(2**15,linestyle='--',color='black',alpha=0.8)    
