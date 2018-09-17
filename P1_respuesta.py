@@ -131,6 +131,10 @@ plt.close(fig)
 # Normalizado
 fft_norm1 = fft_acq1/fft_acq1[frec_ind_send]/(fft_send1/fft_send1[frec_ind_send])
 
+np.save(os.path.join(carpeta_salida,subcarpeta_salida, 'respuesta_potencia_chirp'),fft_norm1)
+np.save(os.path.join(carpeta_salida,subcarpeta_salida, 'frecuencia_chirp'),frec_send1)
+
+
 fig = plt.figure(figsize=(14, 7), dpi=250)
 ax = fig.add_axes([.12, .12, .75, .8])
 ax.semilogy(frec_send1,fft_norm1,'-',color='blue', label=u'Señal normalizada',alpha=0.7,linewidth=2)

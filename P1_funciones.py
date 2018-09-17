@@ -94,6 +94,53 @@ def signalgen(type,fr,amp,duration,fs):
     return output
 
 
+def signalgen_corrected(type,fr,amp,duration,fs,frec_fft,power_fft,frec_range):
+    """
+    generates different signals with len(duration*fs)
+    type: 'sin', 'square', 'ramp', 'constant'
+    fr: float, frequency of the signal in Hz
+    amp: float, amplitud of the signal
+    duration: float, duration of the signal in s
+    fs: float, sampling rate in Hz
+    output: array, signal generated
+    """
+    # output=np.array[()]
+    if type == 'sine':
+        output = amp*np.sin(2.*np.pi*np.arange(int(duration*fs))*fr/fs)
+    elif type == 'square':
+        output = amp*signal.square(2.*np.pi*np.arange(int(duration*fs))*fr/fs)
+    elif type == 'ramp':
+        output = amp*signal.sawtooth(2*np.pi*np.arange(int(duration*fs))*fr/fs, width=0.5).astype(np.float32)                 
+    elif type == 'constant':
+        output = np.full(len(input),amp)
+    else:
+        print ('wrong signal type')
+        output = 0
+        return output
+    
+    # Corrección por respuesta del emisor receptor
+    power_fft = np.append(power_fft,power_fft[:0:-1])
+    frec_fft = np.append(frec_fft,frec_fft[1::]+frec_fft[len(frec_fft)-1])    
+    
+    fft_output = fft.fft(output)
+    frec_output = np.linspace(0,fft_output.shape[0]-1,fft_output.shape[0])/(fft_output.shape[0]-1)*fs
+    
+    fft_power_interp = np.interp(frec_output, frec_fft, power_fft)   
+    fft_output = fft_output/np.sqrt(fft_power_interp)
+    
+    ind_frec0 = np.argmin(np.abs(frec_output-frec_range[0]))
+    ind_frec1 = np.argmin(np.abs(frec_output-frec_range[1]))
+    
+    max_fft_output = np.max(np.abs(fft_output[ind_frec0:ind_frec1]))
+    fft_output[np.abs(fft_output) > max_fft_output] = fft_output[np.abs(fft_output) > max_fft_output]/np.abs(fft_output[np.abs(fft_output) > max_fft_output])*max_fft_output
+    
+    output = np.real(fft.ifft(fft_output))
+    output = amp*output/np.max(output)
+    
+    return output
+    
+
+
 def play_rec(fs,input_channels,data_out,corrige_retardos,offset_correlacion=0,steps_correlacion=0,delay=0.0,dato='int32'):
     
     
