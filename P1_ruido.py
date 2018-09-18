@@ -418,6 +418,21 @@ figname = os.path.join(carpeta_salida,subcarpeta_salida, 'snr_microfono_ch0.png'
 fig.savefig(figname, dpi=300)  
 plt.close(fig)
 
+
+
+fig = plt.figure(figsize=(14, 7), dpi=250)
+ax = fig.add_axes([.12, .15, .75, .8])
+ax.semilogy(frec_acq,fft_acq_ch1)
+ax.legend(bbox_to_anchor=(1.05, 1.00))
+ax.set_xlim([1000,1200])
+ax.grid(linestyle='--')
+ax.set_title(u'Densidad de potencia espectral para señal seno de amplitud 0.3')
+ax.set_xlabel('Frecuencia [Hz]')    
+ax.set_ylabel('Potencia [$\mathregular{V^2}$sec]')   
+figname = os.path.join(carpeta_salida,subcarpeta_salida, 'potencia_mic100.png')
+fig.savefig(figname, dpi=300)  
+plt.close(fig)
+
 #%% RUIDO EN FRECUENCIA
 
 # Genero matriz de señales: ejemplo de barrido en frecuencias en el canal 0
