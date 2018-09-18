@@ -116,12 +116,17 @@ np.save(os.path.join(carpeta_salida,subcarpeta_salida, 'data_in'),data_in)
 data_out = np.load(os.path.join(carpeta_salida,subcarpeta_salida, 'data_out.npy'))
 data_in = np.load(os.path.join(carpeta_salida,subcarpeta_salida, 'data_in.npy'))
 
-calibracion_CH0_seno = np.load(os.path.join('Calibracion',dato, 'Seno_CH0_wp'+ str(windows_nivel[ind_nivel]) +  '_wm'+str(mic_level)+'_'+dato+'_ajuste.npy'))
-calibracion_CH1_seno = np.load(os.path.join('Calibracion',dato, 'Seno_CH1_wp'+ str(windows_nivel[ind_nivel]) +  '_wm'+str(mic_level)+'_'+dato+'_ajuste.npy'))
+calibracion_CH0_seno = np.load(os.path.join('Calibracion',dato, 'Seno_CH0' +  '_wm'+str(mic_level)+'_'+dato+'_ajuste.npy'))
+calibracion_CH1_seno = np.load(os.path.join('Calibracion',dato, 'Seno_CH1' + '_wm'+str(mic_level)+'_'+dato+'_ajuste.npy'))
 
 # Calibracion de los canales
 data_in[:,:,0] = (data_in[:,:,0]-calibracion_CH0_seno[1])/(calibracion_CH0_seno[0])
 data_in[:,:,1] = (data_in[:,:,1]-calibracion_CH1_seno[1])/(calibracion_CH1_seno[0])
+
+
+#plt.plot(data_in[0,:,0])
+#plt.plot(data_in[0,:,1])
+
 
 diodo = '1N4007'
 resistencia = 84
@@ -196,9 +201,9 @@ ax.plot(caida_diodo_cre_uno,i_res_cre_uno*1000,'.',label='Flanco creciente',alph
 #ax.plot(caida_diodo_dec_uno,i_res_dec_uno*1000,'.',label='Flanco decreciente',alpha=0.7)
 ax.plot(caida_diodo_cre_uno,func_exp(caida_diodo_cre_uno, *popt_cre)*1000,'--',label='Ajuste Flanco creciente',alpha=0.9)
 #ax.plot(caida_diodo_dec_uno,func_exp(caida_diodo_dec_uno, *popt_dec)*1000,'--',label='Ajuste Flanco decreciente',alpha=0.7)
-ax.text(0.1,0.8,'Ajuste: a*exp(b*x) + c', transform=ax.transAxes)
+ax.text(0.1,0.8,'Ajuste: a*exp(x/b) + c', transform=ax.transAxes)
 ax.text(0.1,0.75,'a: ' '{:6.2e}'.format(popt_cre[0]) + ' [A]', transform=ax.transAxes)
-ax.text(0.1,0.70,'b: ' '{:6.2e}'.format(popt_cre[1]) + ' [1/V]', transform=ax.transAxes)
+ax.text(0.1,0.70,'b: ' '{:6.2e}'.format(popt_cre[1]) + ' [V]', transform=ax.transAxes)
 ax.text(0.1,0.65,'c: ' '{:6.2e}'.format(popt_cre[2]) + ' [A]', transform=ax.transAxes)
 ax.legend()
 ax.grid(linestyle='--')
@@ -258,6 +263,53 @@ fac = 4.78/4.35
 
 t1 = (20+273.2)*fac - 273.2
 
+
+#%% Estudio de offset
+
+data_out = np.load(os.path.join(carpeta_salida,subcarpeta_salida, 'data_out.npy'))
+data_in = np.load(os.path.join(carpeta_salida,subcarpeta_salida, 'data_in.npy'))
+
+calibracion_CH0_seno = np.load(os.path.join('Calibracion',dato, 'Seno_CH0' +  '_wm'+str(mic_level)+'_'+dato+'_ajuste.npy'))
+calibracion_CH1_seno = np.load(os.path.join('Calibracion',dato, 'Seno_CH1' + '_wm'+str(mic_level)+'_'+dato+'_ajuste.npy'))
+
+# Calibracion de los canales
+data_in[:,:,0] = (data_in[:,:,0]-calibracion_CH0_seno[1])/(calibracion_CH0_seno[0])
+data_in[:,:,1] = (data_in[:,:,1]-calibracion_CH1_seno[1])/(calibracion_CH1_seno[0])
+tiempo = np.arange(data_in.shape[1])/fs
+
+
+caida_tot = -data_in[0,:,0] 
+caida_res = -data_in[0,:,1] 
+
+
+caida_offset = caida_res[np.arange(0,int(fs*0.2),int(fs/frec_ini))+200]
+tiempo_offset = tiempo[np.arange(0,int(fs*0.2),int(fs/frec_ini))+200]
+
+popt_fit, pcov = curve_fit(func_exp, tiempo_offset, caida_offset)
+
+
+
+fig = plt.figure(figsize=(14, 7), dpi=250)
+ax = fig.add_axes([.12, .15, .75, .8])
+ax.plot(tiempo,caida_tot,'-',label=u'Tensión Diodo + Resistencia',alpha=0.8,linewidth=2)
+ax.plot(tiempo,caida_res ,'-',label=u'Tensión diodo',alpha=0.8,linewidth=2)
+ax.plot(tiempo_offset,func_exp(tiempo_offset, *popt_fit),'--',color='red',label='Ajuste caida')
+
+ax.text(1.01,0.9,'Ajuste: a*exp(x/b) + c', transform=ax.transAxes)
+ax.text(1.01,0.85,'a: ' '{:6.2e}'.format(popt_fit[0]) + ' [V]', transform=ax.transAxes)
+ax.text(1.01,0.80,'b: ' '{:6.2e}'.format(-popt_fit[1]) + ' [sec]', transform=ax.transAxes)
+ax.text(1.01,0.75,'c: ' '{:6.2e}'.format(popt_fit[2]) + ' [V]', transform=ax.transAxes)
+
+ax.legend()
+ax.grid(linestyle='--')
+ax.set_xlabel(u'Tiempo [seg]')
+ax.set_ylabel(u'Tensión [V]')
+ax.set_xlim([delay+0.0,delay+0.1])
+ax.set_ylim([-1.5,1.5])
+ax.set_title(u'Caida de tensión en diodo y resistencia '+diodo+' utilizando un seno de '+str(frec_ini)+' Hz. Sin corrección de offset.')
+figname = os.path.join(carpeta_salida,subcarpeta_salida, 'caida_diodo_res_'+diodo+'_'+str(resistencia)+'_'+str(temp)+'C_'+str(frec_ini)+'hz_sin_corregir_offset.png')
+fig.savefig(figname, dpi=300)  
+plt.close(fig)
 
 #%%
 

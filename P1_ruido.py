@@ -507,7 +507,7 @@ std_ch1 = np.array([])
 fig = plt.figure(figsize=(14, 7), dpi=250)
 ax = fig.add_axes([.12, .15, .65, .8])
 
-for i in range(len(factor)):
+for i in range(0,len(factor),2):
 
     fs = int(fs_base*factor[i])
     
@@ -532,7 +532,7 @@ for i in range(len(factor)):
     ax.loglog(frec_acq,fft_acq_ch1,color=cmap(float(i)/len(factor)),alpha=1/(i+1),label='Frec: ' + '{:6.2f}'.format(fs/1000) + ' kHz')
 
 ax.legend(bbox_to_anchor=(1.05, 1.00))
-ax.set_xlim([10,500000])
+ax.set_xlim([1,500000])
 ax.grid(linestyle='--')
 ax.set_xlabel('Frecuencia [Hz]')    
 ax.set_ylabel('Potencia [$\mathregular{V^2}$sec]')    
@@ -602,21 +602,22 @@ for i in range(vec_promedios.shape[0]):
     
 factor_array = np.asarray(factor)
 frecuencia = factor_array*fs_base
+frec_esp = fs_base*8/vec_promedios
+
 
 fig = plt.figure(figsize=(14, 7), dpi=250)
 ax = fig.add_axes([.12, .15, .75, .8])
-ax.plot(frecuencia,std_ch1,'o',markersize=10)    
+ax.plot(frecuencia,std_ch1,'o',markersize=10,label='STD cambiando frec sampleo')    
+ax.plot(frec_esp,std_ch1_conv,'-',markersize=10,label='STD dato filtrado')    
 ax.grid(linestyle='--')
 ax.set_xlabel('Frecuencia sampleo [Hz]')    
 ax.set_ylabel('STD [cuentas]')     
 ax.set_title(u'Ruido en función de la frecuencia de sampleo')
+ax.legend()
 figname = os.path.join(carpeta_salida,subcarpeta_salida, 'std_frec_sampleo.png')
 fig.savefig(figname, dpi=300)  
 plt.close(fig)    
 
 
 
-frec_esp = fs_base*8/vec_promedios
 
-plt.plot(frecuencia,std_ch1,'o',markersize=10)    
-plt.plot(frec_esp,std_ch0_conv)
