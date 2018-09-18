@@ -436,7 +436,7 @@ for i in range(output_channels):
     amplitud_chs.append(amplitud_v_chs_out[i]/amplitud_v_chs[i,ind_nivel])
 fr_trigger = 500
 
-factor = [0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1,1.5,2,3,4,5,6,7,8]
+factor = [0.05,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1,1.5,2,2.5,3,3.5,4,5,6,7,8]
 
 carpeta_salida = 'Ruido'
 subcarpeta_salida = 'Frecuencia'
@@ -488,7 +488,7 @@ for i in range(output_channels):
     amplitud_chs.append(amplitud_v_chs_out[i]/amplitud_v_chs[i,ind_nivel])
 fr_trigger = 500
 
-factor = [0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1,1.5,2,3,4,5,6,7,8]
+factor = [0.05,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1,1.5,2,2.5,3,3.5,4,5,6,7,8]
 
 carpeta_salida = 'Ruido'
 subcarpeta_salida = 'Frecuencia'
@@ -505,7 +505,7 @@ std_ch0 = np.array([])
 std_ch1 = np.array([])
 
 fig = plt.figure(figsize=(14, 7), dpi=250)
-ax = fig.add_axes([.12, .15, .75, .8])
+ax = fig.add_axes([.12, .15, .65, .8])
 
 for i in range(len(factor)):
 
@@ -529,13 +529,14 @@ for i in range(len(factor)):
     frec_acq = np.linspace(0,int(data_in.shape[1]/2),int(data_in.shape[1]/2+1))
     frec_acq = frec_acq*(fs/2+1)/int(data_in.shape[1]/2+1)  
 
-    ax.semilogy(frec_acq,fft_acq_ch1,color=cmap(float(i)/len(factor)),alpha=1/(i+1),label='Frec: ' + '{:6.2f}'.format(fs/1000) + ' kHz')
+    ax.loglog(frec_acq,fft_acq_ch1,color=cmap(float(i)/len(factor)),alpha=1/(i+1),label='Frec: ' + '{:6.2f}'.format(fs/1000) + ' kHz')
 
-ax.legend()
+ax.legend(bbox_to_anchor=(1.05, 1.00))
+ax.set_xlim([10,500000])
 ax.grid(linestyle='--')
 ax.set_xlabel('Frecuencia [Hz]')    
 ax.set_ylabel('Potencia [$\mathregular{V^2}$sec]')    
-ax.set_title(u'Potencia espectral para distintas frecuencias de adquisición')
+ax.set_title(u'Potencia espectral para distintas frecuencias de sampleo')
 figname = os.path.join(carpeta_salida,subcarpeta_salida, 'fft_ruido.png')
 fig.savefig(figname, dpi=300)  
 plt.close(fig)
@@ -558,7 +559,7 @@ for i in range(output_channels):
     amplitud_chs.append(amplitud_v_chs_out[i]/amplitud_v_chs[i,ind_nivel])
 fr_trigger = 500
 
-factor = [0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1,1.5,2,3,4,5,6,7,8]
+factor = [0.05,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1,1.5,2,2.5,3,3.5,4,5,6,7,8]
 
 carpeta_salida = 'Ruido'
 subcarpeta_salida = 'Frecuencia'
@@ -568,14 +569,11 @@ if not os.path.exists(carpeta_salida):
 if not os.path.exists(os.path.join(carpeta_salida,subcarpeta_salida)):
     os.mkdir(os.path.join(carpeta_salida,subcarpeta_salida))  
 
-delay = 1
-med = 2
+delay = 2
+med = 1
 
 std_ch0 = np.array([])
 std_ch1 = np.array([])
-
-fig = plt.figure(figsize=(14, 7), dpi=250)
-ax = fig.add_axes([.12, .15, .75, .8])
 
 for i in range(len(factor)):
 
@@ -588,12 +586,26 @@ for i in range(len(factor)):
     std_ch0 = np.append(std_ch0,np.std(data_in[0,:,0]))
     std_ch1 = np.append(std_ch1,np.std(data_in[0,:,1]))
     
+
+vec_promedios = np.arange(1,40)
+std_ch0_conv = np.array([])
+std_ch1_conv = np.array([])
+
+for i in range(vec_promedios.shape[0]):
+    
+    data_conv_ch0 = np.convolve(data_in[0,:,0],np.ones(vec_promedios[i])/vec_promedios[i],mode='valid')
+    data_conv_ch1 = np.convolve(data_in[0,:,1],np.ones(vec_promedios[i])/vec_promedios[i],mode='valid')
+    
+    std_ch0_conv = np.append(std_ch0_conv,np.std(data_conv_ch0))
+    std_ch1_conv = np.append(std_ch1_conv,np.std(data_conv_ch1))
+    
+    
 factor_array = np.asarray(factor)
 frecuencia = factor_array*fs_base
 
 fig = plt.figure(figsize=(14, 7), dpi=250)
 ax = fig.add_axes([.12, .15, .75, .8])
-ax.plot(frecuencia,std_ch0,'o',markersize=10)    
+ax.plot(frecuencia,std_ch1,'o',markersize=10)    
 ax.grid(linestyle='--')
 ax.set_xlabel('Frecuencia sampleo [Hz]')    
 ax.set_ylabel('STD [cuentas]')     
@@ -601,3 +613,10 @@ ax.set_title(u'Ruido en función de la frecuencia de sampleo')
 figname = os.path.join(carpeta_salida,subcarpeta_salida, 'std_frec_sampleo.png')
 fig.savefig(figname, dpi=300)  
 plt.close(fig)    
+
+
+
+frec_esp = fs_base*8/vec_promedios
+
+plt.plot(frecuencia,std_ch1,'o',markersize=10)    
+plt.plot(frec_esp,std_ch0_conv)
