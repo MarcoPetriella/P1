@@ -355,7 +355,7 @@ plt.close(fig)
 
 carpeta_salida = 'CurvaDiodo'
 subcarpeta_salida = 'RecoveryTime'
-subsubcarpeta_salida = '1N4148'
+subsubcarpeta_salida = 'UF1N4007'
 
 if not os.path.exists(carpeta_salida):
     os.mkdir(carpeta_salida)
@@ -455,7 +455,6 @@ data_in_0 = np.load(os.path.join(carpeta_salida,subcarpeta_salida,subsubcarpeta_
 data_in_0[:,:,0] = (data_in_0[:,:,0]-calibracion_CH0_seno[1])/(calibracion_CH0_seno[0])
 data_in_0[:,:,1] = (data_in_0[:,:,1]-calibracion_CH1_seno[1])/(calibracion_CH1_seno[0])+0.34-0.0033
 
-
 subsubcarpeta_salida = '1N4148'
 
 data_out_1 = np.load(os.path.join(carpeta_salida,subcarpeta_salida,subsubcarpeta_salida, 'data_out.npy'))
@@ -468,13 +467,28 @@ data_in_1[:,:,1] = (data_in_1[:,:,1]-calibracion_CH1_seno[1])/(calibracion_CH1_s
 tiempo_0 = np.linspace(0,data_in_0.shape[1]-1,data_in_0.shape[1])/fs
 tiempo_1 = np.linspace(0,data_in_1.shape[1]-1,data_in_1.shape[1])/fs
 
+subsubcarpeta_salida = 'UF1N4007'
+
+data_out_2 = np.load(os.path.join(carpeta_salida,subcarpeta_salida,subsubcarpeta_salida, 'data_out.npy'))
+data_in_2 = np.load(os.path.join(carpeta_salida,subcarpeta_salida,subsubcarpeta_salida, 'data_in.npy'))
+
+# Calibracion de los canales
+data_in_2[:,:,0] = (data_in_2[:,:,0]-calibracion_CH0_seno[1])/(calibracion_CH0_seno[0])
+data_in_2[:,:,1] = (data_in_2[:,:,1]-calibracion_CH1_seno[1])/(calibracion_CH1_seno[0])+0.34-0.0070+0.0105
+
+tiempo_0 = np.linspace(0,data_in_0.shape[1]-1,data_in_0.shape[1])/fs
+tiempo_1 = np.linspace(0,data_in_1.shape[1]-1,data_in_1.shape[1])/fs
+tiempo_2 = np.linspace(0,data_in_2.shape[1]-1,data_in_2.shape[1])/fs
+
 
 fig = plt.figure(figsize=(14, 7), dpi=250)
 ax = fig.add_axes([.12, .15, .35, .8])
 #ax1 = ax.twinx()
 ax.plot(tiempo_0,data_in_0[0,:,1],'-',label='Caida en resistencia - 1N4007',alpha=0.8)
+ax.plot(tiempo_2,data_in_2[0,:,1],'-',label='Caida en resistencia - UF4007',alpha=0.8)
 ax.plot(tiempo_1,data_in_1[0,:,1],'-',label='Caida en resistencia - 1N4148',alpha=0.8)
-ax.set_title(u'Caida de tensión en resistencia en diodos 1N4007 y 1N4148 utilizando un seno de '+str(frec_ini)+' Hz. Con corrección de offset.')
+
+ax.set_title(u'Caida de tensión en resistencia en diodos 1N4007, UF4007 y 1N4148 utilizando un seno de '+str(frec_ini)+' Hz. Con corrección de offset.')
 ax.legend()
 ax.grid(linestyle='--')
 ax.set_xlabel(u'Tiempo [s]')
@@ -484,7 +498,9 @@ ax.set_xlim([0.615,0.620])
 ax1 = fig.add_axes([.60, .15, .35, .8])
 #ax1 = ax.twinx()
 ax1.plot(tiempo_0,data_in_0[0,:,1],'-',label='Caida en resistencia - 1N4007',alpha=0.8)
+ax1.plot(tiempo_2,data_in_2[0,:,1],'-',label='Caida en resistencia - UF4007',alpha=0.8)
 ax1.plot(tiempo_1,data_in_1[0,:,1],'-',label='Caida en resistencia - 1N4148',alpha=0.8)
+
 ax1.set_title(u'Detalle')
 ax1.legend()
 ax1.grid(linestyle='--')
