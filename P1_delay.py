@@ -248,7 +248,7 @@ retardos_totales = np.load(os.path.join(carpeta_salida,subcarpeta_salida,'retard
 
 frec_sampleo = 44100*4  
 
-fig = plt.figure(figsize=(14, 7), dpi=250)
+fig = plt.figure(figsize=(14, 8), dpi=250)
 ax = fig.add_axes([.12, .12, .65, .8])
     
 ret = retardos_totales  
@@ -258,7 +258,7 @@ for i in range(len(ret)):
     ax.plot(ret[i]/frec_sampleo*1000,'o-',color=cmap(float(i)/15),label=u'Frec señal:' + '{:6.2f}'.format(frecs[i]/1000) + ' kHz' )
         
 ax.set_ylim([100,150])
-ax.legend(bbox_to_anchor=(1.05, 1.00))
+ax.legend(bbox_to_anchor=(1.02, 1.00))
 ax.grid(linestyle='--')
 ax.set_xlabel('Corrida N°')
 ax.set_ylabel('Retardo [ms]')
@@ -338,7 +338,7 @@ t_in_corrected = np.arange(data_in_corrected.shape[1])/fs
 t_corr = np.arange(corr.shape[0])/fs
 
 
-fig = plt.figure(figsize=(14, 7), dpi=250)
+fig = plt.figure(figsize=(14, 8), dpi=250)
 ax = fig.add_axes([.12, .12, .75, .37])
 ax1 = fig.add_axes([.12, .56, .75, .37])
 ax.plot(t_out,data_out[0,:,1],color='red',alpha=0.8,label='CH1')
@@ -355,7 +355,7 @@ figname = os.path.join(carpeta_salida,subcarpeta_salida, 'senal_sintetica.png')
 fig.savefig(figname, dpi=300)  
 plt.close(fig)
 
-fig = plt.figure(figsize=(14, 7), dpi=250)
+fig = plt.figure(figsize=(14, 8), dpi=250)
 ax = fig.add_axes([.12, .12, .75, .37])
 ax1 = fig.add_axes([.12, .56, .75, .37])
 ax.plot(t_in,data_in[0,:,1],color='red',alpha=0.8,label='CH1')
@@ -374,7 +374,7 @@ figname = os.path.join(carpeta_salida,subcarpeta_salida, 'senal_adquirida.png')
 fig.savefig(figname, dpi=300)  
 plt.close(fig)
 
-fig = plt.figure(figsize=(14, 7), dpi=250)
+fig = plt.figure(figsize=(14, 8), dpi=250)
 ax = fig.add_axes([.12, .12, .75, .37])
 ax1 = fig.add_axes([.12, .56, .75, .37])
 ax.plot(t_in_corrected,data_in_corrected[0,:,1],color='red',alpha=0.8,label='CH1')
@@ -394,7 +394,7 @@ plt.close(fig)
 
 ind_max = np.argmax(corr)
 
-fig = plt.figure(figsize=(14, 7), dpi=250)
+fig = plt.figure(figsize=(14, 8), dpi=250)
 ax = fig.add_axes([.12, .12, .75, .8])
 ax.plot(t_corr,corr,color='red',alpha=0.8,label=u'Correlación cruzada CH0')
 ax.axvline(t_corr[len(t_corr)-1]/2,linewidth=2,linestyle='--',color='blue',label=u'duración/2',alpha=0.8)
