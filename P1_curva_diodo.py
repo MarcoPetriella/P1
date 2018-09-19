@@ -485,7 +485,7 @@ data_in_0 = np.load(os.path.join(carpeta_salida,subcarpeta_salida,subsubcarpeta_
 
 # Calibracion de los canales
 data_in_0[:,:,0] = (data_in_0[:,:,0]-calibracion_CH0_seno[1])/(calibracion_CH0_seno[0])
-data_in_0[:,:,1] = (data_in_0[:,:,1]-calibracion_CH1_seno[1])/(calibracion_CH1_seno[0])+0.34-0.0033
+data_in_0[:,:,1] = (data_in_0[:,:,1]-calibracion_CH1_seno[1])/(calibracion_CH1_seno[0])+0.2-0.0070+0.005
 
 subsubcarpeta_salida = '1N4148'
 
@@ -494,7 +494,7 @@ data_in_1 = np.load(os.path.join(carpeta_salida,subcarpeta_salida,subsubcarpeta_
 
 # Calibracion de los canales
 data_in_1[:,:,0] = (data_in_1[:,:,0]-calibracion_CH0_seno[1])/(calibracion_CH0_seno[0])
-data_in_1[:,:,1] = (data_in_1[:,:,1]-calibracion_CH1_seno[1])/(calibracion_CH1_seno[0])+0.34-0.0070
+data_in_1[:,:,1] = (data_in_1[:,:,1]-calibracion_CH1_seno[1])/(calibracion_CH1_seno[0])+0.2-0.0070+0.005
 
 tiempo_0 = np.linspace(0,data_in_0.shape[1]-1,data_in_0.shape[1])/fs
 tiempo_1 = np.linspace(0,data_in_1.shape[1]-1,data_in_1.shape[1])/fs
@@ -506,7 +506,7 @@ data_in_2 = np.load(os.path.join(carpeta_salida,subcarpeta_salida,subsubcarpeta_
 
 # Calibracion de los canales
 data_in_2[:,:,0] = (data_in_2[:,:,0]-calibracion_CH0_seno[1])/(calibracion_CH0_seno[0])
-data_in_2[:,:,1] = (data_in_2[:,:,1]-calibracion_CH1_seno[1])/(calibracion_CH1_seno[0])+0.34-0.0070+0.0105
+data_in_2[:,:,1] = (data_in_2[:,:,1]-calibracion_CH1_seno[1])/(calibracion_CH1_seno[0])+0.2-0.0070+0.0105
 
 tiempo_0 = np.linspace(0,data_in_0.shape[1]-1,data_in_0.shape[1])/fs
 tiempo_1 = np.linspace(0,data_in_1.shape[1]-1,data_in_1.shape[1])/fs
@@ -520,7 +520,7 @@ ax.plot(tiempo_0,data_in_0[0,:,1],'-',label='Caida en resistencia - 1N4007',alph
 ax.plot(tiempo_2,data_in_2[0,:,1],'-',label='Caida en resistencia - UF4007',alpha=0.8)
 ax.plot(tiempo_1,data_in_1[0,:,1],'-',label='Caida en resistencia - 1N4148',alpha=0.8)
 
-ax.set_title(u'Caida de tensión en resistencia en diodos 1N4007, UF4007 y 1N4148 utilizando un seno de '+str(frec_ini)+' Hz. Con corrección de offset.')
+ax.set_title(u'Caida de tensión en resistencia en diodos 1N4007, UF4007 y 1N4148')
 ax.legend()
 ax.grid(linestyle='--')
 ax.set_xlabel(u'Tiempo [s]')
