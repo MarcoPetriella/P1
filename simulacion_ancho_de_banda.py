@@ -26,7 +26,7 @@ from P1_funciones import signalgen_corrected
 from P1_funciones import sincroniza_con_trigger
 
 params = {'legend.fontsize': 'large',
-     #     'figure.figsize': (15, 5),
+     'figure.figsize': (14, 9),
          'axes.labelsize': 'large',
          'axes.titlesize':'medium',
          'xtick.labelsize':'large',

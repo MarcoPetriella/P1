@@ -26,7 +26,7 @@ from P1_funciones import signalgen
 from P1_funciones import sincroniza_con_trigger
 
 params = {'legend.fontsize': 'x-large',
-     #     'figure.figsize': (15, 5),
+     'figure.figsize': (14, 9),
          'axes.labelsize': 'x-large',
          'axes.titlesize':'x-large',
          'xtick.labelsize':'x-large',
@@ -136,7 +136,7 @@ plt.close(fig)
 
 
 
-fig = plt.figure(figsize=(14, 8), dpi=250)
+fig = plt.figure(dpi=250)
 ax = fig.add_axes([.10, .12, .37, .8])
 ax.semilogy(frec_send1,fft_acq1/fft_acq1[frec_ind_send],'-', label=u'Señal adquirida',alpha=0.7,linewidth=2)
 ax.semilogy(frec_send1,fft_send1/fft_send1[frec_ind_send],'-', label=u'Señal enviada',alpha=0.7,linewidth=2)
@@ -208,7 +208,7 @@ plt.close(fig)
 
 
 ### TRAZA TEMPORAL
-fig = plt.figure(figsize=(14, 8), dpi=250)
+fig = plt.figure(dpi=250)
 ax = fig.add_axes([.12, .12, .75, .8])
 ax1 = ax.twinx()
 ax1.plot(data_out1[0,:,0],linewidth=2,color='blue',alpha=0.7,label=u'Señal enviada')
@@ -514,7 +514,7 @@ if not os.path.exists(os.path.join(carpeta_salida,subcarpeta_salida)):
     os.mkdir(os.path.join(carpeta_salida,subcarpeta_salida)) 
 
 
-fig = plt.figure(figsize=(14, 8), dpi=250)
+fig = plt.figure(dpi=250)
 ax = fig.add_axes([.12, .12, .75, .8])
 ax.semilogy(frec_send1,fft_norm1,'-',color='blue', label=u'Potencia por chirp',alpha=0.7,linewidth=2) # por chirp
 ax.semilogy(frecs_finales,pot_salida_max,'o',color='red', label=u'Potencia por barrido',alpha=0.7,linewidth=2) # barrido
@@ -548,7 +548,7 @@ plt.close(fig)
 
 
 
-fig = plt.figure(figsize=(14, 8), dpi=250)
+fig = plt.figure(dpi=250)
 ax = fig.add_axes([.10, .12, .37, .8])
 ax.semilogy(frec_send1,fft_norm1,'-',color='blue', label=u'Potencia por chirp',alpha=0.7,linewidth=2) # por chirp
 ax.semilogy(frecs_finales,pot_salida_max,'o',color='red', label=u'Potencia por barrido',alpha=0.7,linewidth=2) # barrido

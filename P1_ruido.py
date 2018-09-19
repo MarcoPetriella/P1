@@ -27,7 +27,7 @@ from P1_funciones import signalgen
 from P1_funciones import sincroniza_con_trigger
 
 params = {'legend.fontsize': 'x-large',
-     #     'figure.figsize': (15, 5),
+     'figure.figsize': (14, 9),
          'axes.labelsize': 'x-large',
          'axes.titlesize':'x-large',
          'xtick.labelsize':'x-large',
@@ -127,7 +127,7 @@ np.std(data_in_cal_med[:,1])
 label0='CH0 - STD: ' + '{:6.3f}'.format(np.std(data_in_cal_med[:,0]*1000)) + ' mV -' + '{:6.1f}'.format(np.std(data_in_med[:,0])) + ' cuentas'
 label1='CH1 - STD: ' + '{:6.3f}'.format(np.std(data_in_cal_med[:,1]*1000)) + ' mV -' + '{:6.1f}'.format(np.std(data_in_med[:,1])) + ' cuentas'
 
-fig = plt.figure(figsize=(14, 8), dpi=250)
+fig = plt.figure(dpi=250)
 ax = fig.add_axes([.12, .15, .75, .8])
 ax.hist(data_in_cal_med[:,0],bins=10,rwidth=0.9,label=label0,alpha=0.7,align ='mid')
 ax.grid(linestyle='--')
@@ -140,7 +140,7 @@ fig.savefig(figname, dpi=300)
 plt.close(fig)
 
 
-fig = plt.figure(figsize=(14, 8), dpi=250)
+fig = plt.figure(dpi=250)
 ax = fig.add_axes([.12, .15, .75, .8])
 ax.hist(data_in_med[:,0],bins=10,rwidth=0.9,label=label0,alpha=0.7,align ='mid')
 ax.grid(linestyle='--')
@@ -154,7 +154,7 @@ plt.close(fig)
 
 
 
-fig = plt.figure(figsize=(14, 8), dpi=250)
+fig = plt.figure(dpi=250)
 ax = fig.add_axes([.12, .15, .35, .8])
 ax.hist(data_in_cal_med[:,0]*1000,bins=10,rwidth=0.9,label=label1,alpha=0.7,align ='mid')
 ax.grid(linestyle='--')
@@ -177,7 +177,7 @@ plt.close(fig)
 ######
 
 
-fig = plt.figure(figsize=(14, 8), dpi=250)
+fig = plt.figure(dpi=250)
 ax = fig.add_axes([.12, .15, .75, .8])
 ax.hist(data_in_cal_med[:,1],bins=10,rwidth=0.9,label=label1,alpha=0.7,align ='mid')
 ax.grid(linestyle='--')
@@ -190,7 +190,7 @@ fig.savefig(figname, dpi=300)
 plt.close(fig)
 
 
-fig = plt.figure(figsize=(14, 8), dpi=250)
+fig = plt.figure(dpi=250)
 ax = fig.add_axes([.12, .15, .75, .8])
 ax.hist(data_in_med[:,1],bins=10,rwidth=0.9,label=label1,alpha=0.7,align ='mid')
 ax.grid(linestyle='--')
@@ -204,7 +204,7 @@ plt.close(fig)
 
 
 
-fig = plt.figure(figsize=(14, 8), dpi=250)
+fig = plt.figure(dpi=250)
 ax = fig.add_axes([.12, .15, .35, .8])
 ax.hist(data_in_cal_med[:,1]*1000,bins=10,rwidth=0.9,label=label1,alpha=0.7,align ='mid')
 ax.grid(linestyle='--')
@@ -318,7 +318,7 @@ for i,mic_level in enumerate(mic_levels):
 
 mic_levels_array = np.asarray(mic_levels)
 
-fig = plt.figure(figsize=(14, 8), dpi=250)
+fig = plt.figure(dpi=250)
 ax = fig.add_axes([.12, .15, .75, .8])
 ax1=ax.twinx()
 ax.plot(mic_levels_array,std_ch0_cts,'o',color='blue',alpha=0.7,label='STD [cuentas]',markersize=10)
@@ -334,7 +334,7 @@ figname = os.path.join(carpeta_salida,subcarpeta_salida, 'ruido_nivel_microfono_
 fig.savefig(figname, dpi=300)  
 plt.close(fig)
 
-fig = plt.figure(figsize=(14, 8), dpi=250)
+fig = plt.figure(dpi=250)
 ax = fig.add_axes([.12, .15, .75, .8])
 ax1=ax.twinx()
 ax.plot(mic_levels_array,std_ch1_cts,'o',color='blue',alpha=0.7,label='STD [cuentas]',markersize=10)
@@ -455,7 +455,7 @@ for i,mic_level in enumerate(mic_levels):
 mic_levels_array = np.asarray(mic_levels)
 
 
-fig = plt.figure(figsize=(14, 8), dpi=250)
+fig = plt.figure(dpi=250)
 ax = fig.add_axes([.12, .15, .75, .8])
 ax.semilogy(mic_levels_array,snr_ch0s,'o',color='blue',alpha=0.7,label='STD [cuentas]',markersize=10)
 ax.set_ylim([1e9,1e13])
@@ -469,7 +469,7 @@ plt.close(fig)
 
 
 
-fig = plt.figure(figsize=(14, 8), dpi=250)
+fig = plt.figure(dpi=250)
 ax = fig.add_axes([.12, .15, .75, .8])
 ax.semilogy(frec_acq,fft_acq_ch1)
 ax.legend(bbox_to_anchor=(1.05, 1.00))
@@ -568,7 +568,7 @@ med = 1
 std_ch0 = np.array([])
 std_ch1 = np.array([])
 
-fig = plt.figure(figsize=(14, 8), dpi=250)
+fig = plt.figure(dpi=250)
 ax = fig.add_axes([.12, .15, .65, .8])
 
 for i in range(0,len(factor),2):
@@ -669,7 +669,7 @@ frecuencia = factor_array*fs_base
 frec_esp = fs_base*8/vec_promedios
 
 
-fig = plt.figure(figsize=(14, 8), dpi=250)
+fig = plt.figure(dpi=250)
 ax = fig.add_axes([.12, .15, .75, .8])
 ax.plot(frecuencia,std_ch1,'o',markersize=10,label='STD cambiando frec sampleo')    
 ax.plot(frec_esp,std_ch1_conv,'-',markersize=10,label='STD dato filtrado')    

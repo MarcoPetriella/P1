@@ -28,7 +28,7 @@ from P1_funciones import signalgen_corrected
 from P1_funciones import sincroniza_con_trigger
 
 params = {'legend.fontsize': 'x-large',
-     #     'figure.figsize': (15, 5),
+         'figure.figsize': (14, 9),
          'axes.labelsize': 'x-large',
          'axes.titlesize':'x-large',
          'xtick.labelsize':'x-large',
@@ -167,7 +167,7 @@ i_res_cre = i_res_cre[ind_cre]
 i_res_dec = i_res[:-1]
 i_res_dec = i_res_dec[ind_dec]
 
-fig = plt.figure(figsize=(14, 8), dpi=250)
+fig = plt.figure(dpi=250)
 ax = fig.add_axes([.12, .15, .75, .8])
 ax.plot(caida_diodo_cre,i_res_cre*1000,'.',label='Flanco creciente',alpha=0.8)
 ax.plot(caida_diodo_dec,i_res_dec*1000,'.',label='Flanco decreciente',alpha=0.8)
@@ -202,7 +202,7 @@ i_res_dec_uno = i_res_dec[int(fs/(frec_ini*4)):+int(fs/(frec_ini*4))+int(fs/(fre
 guess = np.array([Is, Vt/n, Is])
 popt_dec, pcov = curve_fit(func_exp, caida_diodo_dec_uno, i_res_dec_uno,guess)
 
-fig = plt.figure(figsize=(14, 7), dpi=250)
+fig = plt.figure(dpi=250)
 ax = fig.add_axes([.12, .15, .75, .8])
 ax.plot(caida_diodo_cre_uno,i_res_cre_uno*1000,'.',label='Flanco creciente',alpha=0.7)
 #ax.plot(caida_diodo_dec_uno,i_res_dec_uno*1000,'.',label='Flanco decreciente',alpha=0.7)
@@ -225,7 +225,7 @@ plt.close(fig)
 
 
 
-fig = plt.figure(figsize=(14, 8), dpi=250)
+fig = plt.figure(dpi=250)
 ax = fig.add_axes([.12, .15, .75, .8])
 ax.plot(tiempo,caida_tot,'-',label=u'Tensión diodo + desistencia',alpha=0.8,linewidth=2)
 ax.plot(tiempo,caida_diodo,'-',label=u'Tensión diodo',alpha=0.8,linewidth=2)
@@ -266,7 +266,7 @@ fft2 = fft2[0:int(len(fft2)/2)+1]
 
 frec = np.arange(0,len(fft1))/len(fft1)*fs/2
 
-fig = plt.figure(figsize=(14, 8), dpi=250)
+fig = plt.figure(dpi=250)
 ax = fig.add_axes([.12, .15, .35, .8])
 ax.plot(tiempo,caida_res,'-',label=u'Tensión resistencia medida',alpha=0.8,linewidth=2)
 ax.plot(tiempo,caida_res+0.175,'-',label=u'Tensión resistencia corregida',alpha=0.8,linewidth=2)
@@ -300,7 +300,7 @@ caida_res = data_in[0,int(fs*delay):int(fs*(delay+med)),1] +offset#+ np.max(data
 tiempo = np.arange(data_in.shape[1])/fs
 tiempo = tiempo[int(fs*delay):int(fs*(delay+med))]
 
-fig = plt.figure(figsize=(14, 8), dpi=250)
+fig = plt.figure(dpi=250)
 ax = fig.add_axes([.12, .15, .75, .8])
 ax.plot(tiempo,caida_tot,'-',label=u'Tensión Diodo + Resistencia',alpha=0.8,linewidth=2)
 ax.plot(tiempo,caida_diodo,'-',label=u'Tensión diodo',alpha=0.8,linewidth=2)
@@ -452,7 +452,7 @@ data_in[:,:,1] = (data_in[:,:,1]-calibracion_CH1_seno[1])/(calibracion_CH1_seno[
 
 tiempo = np.linspace(0,data_in.shape[1]-1,data_in.shape[1])/fs
 
-fig = plt.figure(figsize=(14, 7), dpi=250)
+fig = plt.figure(dpi=250)
 ax = fig.add_axes([.12, .15, .75, .8])
 #ax1 = ax.twinx()
 ax.plot(tiempo,data_in[0,:,0],'-',label='',alpha=0.8)
@@ -544,7 +544,7 @@ diodo = '1N4148'
 carpeta_salida = 'CurvaDiodo'
 subcarpeta_salida = 'Temperatura'
 subsubcarpeta_salida = diodo
-temp = 20
+temp = 37
 
 if not os.path.exists(carpeta_salida):
     os.mkdir(carpeta_salida)
@@ -557,7 +557,7 @@ if not os.path.exists(os.path.join(carpeta_salida,subcarpeta_salida,subsubcarpet
 
 # Genero matriz de señales: ejemplo de barrido en frecuencias en el canal 0
 dato = 'int16'    
-ind_nivel = 6
+ind_nivel = 9
 mic_level = 70
 fs = 44100*8  
 duracion = 5

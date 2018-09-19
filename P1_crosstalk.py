@@ -26,7 +26,7 @@ from P1_funciones import signalgen
 from P1_funciones import sincroniza_con_trigger
 
 params = {'legend.fontsize': 'large',
-     #     'figure.figsize': (15, 5),
+     'figure.figsize': (14, 9),
          'axes.labelsize': 'large',
          'axes.titlesize':'medium',
          'xtick.labelsize':'large',
@@ -158,7 +158,7 @@ snr_ch1 = fft_acq_ch1[frec_testeo_ind1]/np.mean(fft_acq_ch1[frec_comparacion_ind
 
 snr_ch0/snr_ch1
 
-fig = plt.figure(figsize=(14, 7), dpi=250)
+fig = plt.figure(dpi=250)
 ax = fig.add_axes([.12, .12, .75, .8])
 ax.semilogy(frec_acq,fft_acq_ch0,'-',color='blue', label=u'Canal con señal - SNR: ' + '{:6.1e}'.format(snr_ch0),alpha=0.7)
 ax.semilogy(frec_acq,fft_acq_ch1,'-',color='red', label=u'Canal sin señal - SNR: ' + '{:6.1e}'.format(snr_ch1),alpha=0.7)
