@@ -158,7 +158,6 @@ ax1.semilogy(frec_send1,fft_norm1,'-', label=u'Señal normalizada',alpha=0.7,lin
 
 ax1.set_xlim([-100,500])
 ax1.set_ylim([1e-3,1e1])
-ax1.set_title(u'FFT de la señal enviada y adquirida')
 ax1.set_xlabel('Frecuencia [Hz]')
 ax1.set_ylabel('Potencia [db]')
 ax1.set_title('Detalle baja frecuencia')
@@ -533,7 +532,6 @@ ax.grid(linewidth=0.5,linestyle='--')
 plt.show()
 
 
-
 figname = os.path.join(carpeta_salida,subcarpeta_salida, 'comparacion.png')
 fig.savefig(figname, dpi=300)  
 plt.close(fig)
@@ -548,6 +546,39 @@ figname = os.path.join(carpeta_salida,subcarpeta_salida, 'comparacion_alta_frecu
 fig.savefig(figname, dpi=300)  
 plt.close(fig)
 
+
+
+fig = plt.figure(figsize=(14, 8), dpi=250)
+ax = fig.add_axes([.10, .12, .37, .8])
+ax.semilogy(frec_send1,fft_norm1,'-',color='blue', label=u'Potencia por chirp',alpha=0.7,linewidth=2) # por chirp
+ax.semilogy(frecs_finales,pot_salida_max,'o',color='red', label=u'Potencia por barrido',alpha=0.7,linewidth=2) # barrido
+
+ax.axvline(14.6,linestyle='--',color='red',alpha=0.7, label='Ancho de banda')
+ax.axvline(20187,linestyle='--',color='red',alpha=0.7)
+ax.set_xlim([-1000,28000])
+ax.set_ylim([1e-3,1e1])
+ax.set_title(u'FFT de la señal enviada y adquirida')
+ax.set_xlabel('Frecuencia [Hz]')
+ax.set_ylabel('Potencia [db]')
+ax.set_title('Potencia del conjunto emisor-receptor. Comparación método chirp y barrido. BW: 14.6 Hz - 20187 Hz')
+ax.legend(loc=1)
+ax.grid(linewidth=0.5,linestyle='--')
+
+ax1 = fig.add_axes([.58, .12, .37, .8])
+ax1.semilogy(frec_send1,fft_norm1,'-',color='blue', label=u'Potencia por chirp',alpha=0.7,linewidth=2) # por chirp
+ax1.semilogy(frecs_finales,pot_salida_max,'o',color='red', label=u'Potencia por barrido',alpha=0.7,linewidth=2) # barrido
+
+ax1.set_xlim([-100,500])
+ax1.set_ylim([1e-3,1e1])
+ax1.set_xlabel('Frecuencia [Hz]')
+ax1.set_ylabel('Potencia [db]')
+ax1.set_title('Detalle baja frecuencia')
+ax1.legend(loc=1)
+ax1.grid(linewidth=0.5,linestyle='--')
+
+figname = os.path.join(carpeta_salida,subcarpeta_salida, 'comparacion_detalle.png')
+fig.savefig(figname, dpi=300)  
+plt.close(fig)
 
 #%%
 ## COMPARACION POTENCIA EMISOR-RECEPTOR: METODO BARRIDO DE FRECUENCIAS Y RUIDO BLANCO
