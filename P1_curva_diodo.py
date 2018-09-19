@@ -27,12 +27,13 @@ from P1_funciones import signalgen
 from P1_funciones import signalgen_corrected
 from P1_funciones import sincroniza_con_trigger
 
-params = {'legend.fontsize': 'x-large',
-         'figure.figsize': (14, 9),
-         'axes.labelsize': 'x-large',
-         'axes.titlesize':'x-large',
-         'xtick.labelsize':'x-large',
-         'ytick.labelsize':'x-large'}
+params = {'legend.fontsize': 14,
+          'figure.figsize': (14, 9),
+         'axes.labelsize': 24,
+         'axes.titlesize':18,
+         'font.size':18,
+         'xtick.labelsize':24,
+         'ytick.labelsize':24}
 pylab.rcParams.update(params)
 
 
@@ -117,8 +118,9 @@ np.save(os.path.join(carpeta_salida,subcarpeta_salida,subsubcarpeta_salida, 'dat
 np.save(os.path.join(carpeta_salida,subcarpeta_salida,subsubcarpeta_salida, 'data_in'),data_in)
 
 #%%
-
-diodo = 'UF4007'
+diodo = '1N4007'
+carpeta_salida = 'CurvaDiodo'
+subcarpeta_salida = 'Curvas'
 subsubcarpeta_salida = diodo
 
 data_out = np.load(os.path.join(carpeta_salida,subcarpeta_salida,subsubcarpeta_salida, 'data_out.npy'))
@@ -168,7 +170,7 @@ i_res_dec = i_res[:-1]
 i_res_dec = i_res_dec[ind_dec]
 
 fig = plt.figure(dpi=250)
-ax = fig.add_axes([.12, .15, .75, .8])
+ax = fig.add_axes([.15, .15, .75, .8])     
 ax.plot(caida_diodo_cre,i_res_cre*1000,'.',label='Flanco creciente',alpha=0.8)
 ax.plot(caida_diodo_dec,i_res_dec*1000,'.',label='Flanco decreciente',alpha=0.8)
 ax.legend()
@@ -203,7 +205,7 @@ guess = np.array([Is, Vt/n, Is])
 popt_dec, pcov = curve_fit(func_exp, caida_diodo_dec_uno, i_res_dec_uno,guess)
 
 fig = plt.figure(dpi=250)
-ax = fig.add_axes([.12, .15, .75, .8])
+ax = fig.add_axes([.15, .15, .75, .8])     
 ax.plot(caida_diodo_cre_uno,i_res_cre_uno*1000,'.',label='Flanco creciente',alpha=0.7)
 #ax.plot(caida_diodo_dec_uno,i_res_dec_uno*1000,'.',label='Flanco decreciente',alpha=0.7)
 ax.plot(caida_diodo_cre_uno,func_exp(caida_diodo_cre_uno, *popt_cre)*1000,'--',label='Ajuste Flanco creciente',alpha=0.9)
@@ -226,7 +228,7 @@ plt.close(fig)
 
 
 fig = plt.figure(dpi=250)
-ax = fig.add_axes([.12, .15, .75, .8])
+ax = fig.add_axes([.15, .15, .75, .8])     
 ax.plot(tiempo,caida_tot,'-',label=u'Tensión diodo + desistencia',alpha=0.8,linewidth=2)
 ax.plot(tiempo,caida_diodo,'-',label=u'Tensión diodo',alpha=0.8,linewidth=2)
 ax.plot(tiempo,caida_res,'-',label=u'Tensión resistencia',alpha=0.8,linewidth=2)
@@ -267,7 +269,7 @@ fft2 = fft2[0:int(len(fft2)/2)+1]
 frec = np.arange(0,len(fft1))/len(fft1)*fs/2
 
 fig = plt.figure(dpi=250)
-ax = fig.add_axes([.12, .15, .35, .8])
+ax = fig.add_axes([.15, .15, .32, .8])
 ax.plot(tiempo,caida_res,'-',label=u'Tensión resistencia medida',alpha=0.8,linewidth=2)
 ax.plot(tiempo,caida_res+0.175,'-',label=u'Tensión resistencia corregida',alpha=0.8,linewidth=2)
 ax.legend()
@@ -277,7 +279,7 @@ ax.set_ylabel(u'Tensión [V]')
 ax.set_xlim([delay+0.1,delay+0.11])
 ax.set_ylim([-1.0,1.0])
 
-ax1 = fig.add_axes([.60, .15, .35, .8])
+ax1 = fig.add_axes([.60, .15, .32, .8])
 ax1.plot(frec,fft1,'-',label=u'FFT tensión medida',alpha=0.8,linewidth=2)
 ax1.plot(frec,fft2,'-',label=u'FFT tensión corregida',alpha=0.5,linewidth=2)
 ax1.set_xlim([-200,2000])
@@ -301,7 +303,7 @@ tiempo = np.arange(data_in.shape[1])/fs
 tiempo = tiempo[int(fs*delay):int(fs*(delay+med))]
 
 fig = plt.figure(dpi=250)
-ax = fig.add_axes([.12, .15, .75, .8])
+ax = fig.add_axes([.15, .15, .75, .8])     
 ax.plot(tiempo,caida_tot,'-',label=u'Tensión Diodo + Resistencia',alpha=0.8,linewidth=2)
 ax.plot(tiempo,caida_diodo,'-',label=u'Tensión diodo',alpha=0.8,linewidth=2)
 ax.plot(tiempo,caida_res,'-',label=u'Tensión resistencia',alpha=0.8,linewidth=2)
@@ -349,16 +351,16 @@ popt_fit, pcov = curve_fit(func_exp, tiempo_offset, caida_offset)
 
 
 
-fig = plt.figure(figsize=(14, 7), dpi=250)
-ax = fig.add_axes([.12, .15, .75, .8])
+fig = plt.figure(dpi=250)
+ax = fig.add_axes([.15, .15, .75, .8])     
 ax.plot(tiempo,caida_tot,'-',label=u'Tensión Diodo + Resistencia',alpha=0.8,linewidth=2)
 ax.plot(tiempo,caida_res ,'-',label=u'Tensión resistencia',alpha=0.8,linewidth=2)
 ax.plot(tiempo_offset,func_exp(tiempo_offset, *popt_fit),'--',color='red',label='Ajuste caida')
 
-ax.text(1.01,0.9,'Ajuste: a*exp(x/b) + c', transform=ax.transAxes)
-ax.text(1.01,0.85,'a: ' '{:6.2e}'.format(popt_fit[0]) + ' [V]', transform=ax.transAxes)
-ax.text(1.01,0.80,'b: ' '{:6.2e}'.format(-popt_fit[1]) + ' [sec]', transform=ax.transAxes)
-ax.text(1.01,0.75,'c: ' '{:6.2e}'.format(popt_fit[2]) + ' [V]', transform=ax.transAxes)
+ax.text(0.7,0.9,'Ajuste: a*exp(x/b) + c', transform=ax.transAxes)
+ax.text(0.7,0.85,'a: ' '{:6.2e}'.format(popt_fit[0]) + ' [V]', transform=ax.transAxes)
+ax.text(0.7,0.80,'b: ' '{:6.2e}'.format(-popt_fit[1]) + ' [sec]', transform=ax.transAxes)
+ax.text(0.7,0.75,'c: ' '{:6.2e}'.format(popt_fit[2]) + ' [V]', transform=ax.transAxes)
 
 ax.legend()
 ax.grid(linestyle='--')
@@ -440,6 +442,12 @@ np.save(os.path.join(carpeta_salida,subcarpeta_salida,subsubcarpeta_salida, 'dat
 np.save(os.path.join(carpeta_salida,subcarpeta_salida,subsubcarpeta_salida, 'data_in'),data_in)
 
 #%%
+carpeta_salida = 'CurvaDiodo'
+subcarpeta_salida = 'RecoveryTime'
+subsubcarpeta_salida = 'UF4007'
+
+
+
 data_out = np.load(os.path.join(carpeta_salida,subcarpeta_salida,subsubcarpeta_salida, 'data_out.npy'))
 data_in = np.load(os.path.join(carpeta_salida,subcarpeta_salida,subsubcarpeta_salida, 'data_in.npy'))
 
@@ -453,7 +461,7 @@ data_in[:,:,1] = (data_in[:,:,1]-calibracion_CH1_seno[1])/(calibracion_CH1_seno[
 tiempo = np.linspace(0,data_in.shape[1]-1,data_in.shape[1])/fs
 
 fig = plt.figure(dpi=250)
-ax = fig.add_axes([.12, .15, .75, .8])
+ax = fig.add_axes([.15, .15, .75, .8])     
 #ax1 = ax.twinx()
 ax.plot(tiempo,data_in[0,:,0],'-',label='',alpha=0.8)
 ax.plot(tiempo,data_in[0,:,1],'-',color='red',label='',alpha=0.8)
@@ -505,7 +513,7 @@ tiempo_1 = np.linspace(0,data_in_1.shape[1]-1,data_in_1.shape[1])/fs
 tiempo_2 = np.linspace(0,data_in_2.shape[1]-1,data_in_2.shape[1])/fs
 
 
-fig = plt.figure(figsize=(14, 7), dpi=250)
+fig = plt.figure(dpi=250)
 ax = fig.add_axes([.12, .15, .35, .8])
 #ax1 = ax.twinx()
 ax.plot(tiempo_0,data_in_0[0,:,1],'-',label='Caida en resistencia - 1N4007',alpha=0.8)

@@ -26,12 +26,13 @@ from P1_funciones import play_rec
 from P1_funciones import signalgen
 from P1_funciones import sincroniza_con_trigger
 
-params = {'legend.fontsize': 'x-large',
+params = {'legend.fontsize': 14,
           'figure.figsize': (14, 9),
-         'axes.labelsize': 'x-large',
-         'axes.titlesize':'x-large',
-         'xtick.labelsize':'x-large',
-         'ytick.labelsize':'x-large'}
+         'axes.labelsize': 24,
+         'axes.titlesize':18,
+         'font.size':18,
+         'xtick.labelsize':24,
+         'ytick.labelsize':24}
 pylab.rcParams.update(params)
 
 
@@ -106,7 +107,7 @@ if not os.path.exists(os.path.join(carpeta_salida,subcarpeta_salida)):
 
 # Genero matriz de señales: ejemplo de barrido en frecuencias en el canal 0
 ind_nivel = 2
-mic_level = 10
+mic_level = 100
 fs = 44100*8  
 duracion = 0.5
 muestras = int(fs*duracion)
@@ -157,6 +158,18 @@ np.save(os.path.join(carpeta_salida,subcarpeta_salida, dato+'_wm'+str(mic_level)
 # En este nivel de parlante la señal de amplitud 1 (1V) ocupa todo el rango de medición
 # Esto vale para la placa de pc de escritorio de casa de Marco y windows 10
 
+dato = 'int16' 
+ind_nivel = 2
+
+carpeta_salida = 'Calibracion'
+subcarpeta_salida = dato
+if not os.path.exists(carpeta_salida):
+    os.mkdir(carpeta_salida)
+    
+if not os.path.exists(os.path.join(carpeta_salida,subcarpeta_salida)):
+    os.mkdir(os.path.join(carpeta_salida,subcarpeta_salida))     
+
+
 mic_levels = [10,20,30,40,50,60,70,80,90,100]
 
 for mic_level in mic_levels:
@@ -179,7 +192,7 @@ for mic_level in mic_levels:
             
             
             fig = plt.figure(dpi=250)
-            ax = fig.add_axes([.12, .15, .75, .8])        
+            ax = fig.add_axes([.15, .15, .75, .8])        
             ax.plot(data_out[i,int(fs*0.1):-int(fs*0.1),j]/amplitud*amplitud_v,data_in[i,int(fs*0.1):-int(fs*0.1),j],'--',color='blue',alpha=0.8,label='Señal')
             ax.plot(data_out[i,int(fs*0.1):-int(fs*0.1),j]/amplitud*amplitud_v,data_out[i,int(fs*0.1):-int(fs*0.1),j]/amplitud*amplitud_v*ajuste[0]+ajuste[1],'--',color='red',alpha=0.8,label='Ajuste')
             ax.grid(linestyle='--')
@@ -197,7 +210,7 @@ for mic_level in mic_levels:
             
             
             fig = plt.figure(dpi=250)
-            ax = fig.add_axes([.12, .15, .75, .8])        
+            ax = fig.add_axes([.15, .15, .75, .8])        
             ax.plot(data_out[i,int(fs*0.1):-int(fs*0.1),j]/amplitud*amplitud_v,(data_in[i,int(fs*0.1):-int(fs*0.1),j]-ajuste[1])/ajuste[0],'--',color='red')       
             ax.set_xlabel('Señal enviada [V]')
             ax.set_ylabel('Señal recibida [V]')   
@@ -214,6 +227,7 @@ for mic_level in mic_levels:
 #%%
 
 mic_levels = [10,20,30,40,50,60,70,80,90,100]
+ind_nivel = 2
 
    
 rango_ch0 = np.array([])
@@ -231,7 +245,7 @@ for i,mic_level in enumerate(mic_levels):
 mic_levels_array = np.asarray(mic_levels)
 
 fig = plt.figure(dpi=250)
-ax = fig.add_axes([.12, .15, .75, .8])  
+ax = fig.add_axes([.15, .15, .75, .8])  
 ax.semilogy(mic_levels_array,rango_ch0,'o',label='CH0',alpha=0.7,markersize=10)
 ax.semilogy(mic_levels_array,rango_ch1,'o',label='CH1',alpha=0.7,markersize=10)
 ax.axhline(2.05,linestyle='--',color='black',alpha=0.8,label='Limitación de la entrada')    
@@ -283,7 +297,7 @@ amplitud_v_chs = [amplitud_v_ch0[ind_nivel],amplitud_v_ch1[ind_nivel]] #V
 mic_levels = [10,20,30,40,50,60,70,80,90,100]
 
 fig = plt.figure(dpi=250)
-ax = fig.add_axes([.12, .15, .75, .8])   
+ax = fig.add_axes([.15, .15, .75, .8])   
 
 for i,mic_level in enumerate(mic_levels):
     
@@ -299,7 +313,7 @@ ax.set_xlabel('Señal enviada [V]')
 ax.set_ylabel('Señal recibida [cuentas]')    
 ax.set_title(u'Señal recibida al variar el nivel de micrófono')   
 ax.grid(linestyle='--')    
-ax.legend(fontsize=10)
+ax.legend()
 #ax.legend(bbox_to_anchor=(1.05, 1.00))
 figname = os.path.join(carpeta_salida, 'respuesta_por_nivel_mic.png')
 fig.savefig(figname, dpi=300)  
@@ -315,7 +329,7 @@ tension_rms_v_ch1 = np.array([0.050, 0.146, 0.291, 0.451, 0.693, 0.904, 1.170, 1
 amplitud_v_ch1 = tension_rms_v_ch1*np.sqrt(2)  
 
 fig = plt.figure(dpi=250)
-ax = fig.add_axes([.12, .15, .75, .8])  
+ax = fig.add_axes([.15, .15, .75, .8])  
 ax.plot(windows_nivel,amplitud_v_ch0,'o',label='CH0',alpha=0.7,markersize=10)
 ax.plot(windows_nivel,amplitud_v_ch1,'o',label='CH1',alpha=0.7,markersize=10)
 ax.grid(linestyle='--')    

@@ -28,12 +28,12 @@ from P1_funciones import signalgen
 from P1_funciones import sincroniza_con_trigger
 from P1_funciones import completa_con_ceros
 
-params = {'legend.fontsize': 'x-large',
+params = {'legend.fontsize': 24,
      'figure.figsize': (14, 9),
-         'axes.labelsize': 'x-large',
-         'axes.titlesize':'x-large',
-         'xtick.labelsize':'x-large',
-         'ytick.labelsize':'x-large'}
+         'axes.labelsize': 24,
+         'axes.titlesize':24,
+         'xtick.labelsize':24,
+         'ytick.labelsize':24}
 pylab.rcParams.update(params)
 
 
