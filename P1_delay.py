@@ -28,13 +28,14 @@ from P1_funciones import signalgen
 from P1_funciones import sincroniza_con_trigger
 from P1_funciones import completa_con_ceros
 
-params = {'legend.fontsize': 'large',
+params = {'legend.fontsize': 'x-large',
      #     'figure.figsize': (15, 5),
-         'axes.labelsize': 'large',
-         'axes.titlesize':'medium',
-         'xtick.labelsize':'large',
-         'ytick.labelsize':'large'}
+         'axes.labelsize': 'x-large',
+         'axes.titlesize':'x-large',
+         'xtick.labelsize':'x-large',
+         'ytick.labelsize':'x-large'}
 pylab.rcParams.update(params)
+
 
 
 
@@ -150,7 +151,7 @@ for k in range(8):
     frec_sampleo = 44100*(k+1)  
     frecuencias_sampleo = np.append(frecuencias_sampleo,frec_sampleo)
     
-    fig = plt.figure(figsize=(14, 7), dpi=250)
+    fig = plt.figure(figsize=(14, 8), dpi=250)
     ax = fig.add_axes([.12, .12, .75, .8])
     
     ret = super_retardos_totales[k]  

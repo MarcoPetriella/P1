@@ -119,7 +119,7 @@ np.save(os.path.join(carpeta_salida,subcarpeta_salida,subsubcarpeta_salida, 'dat
 #%%
 
 diodo = 'UF4007'
-
+subsubcarpeta_salida = diodo
 
 data_out = np.load(os.path.join(carpeta_salida,subcarpeta_salida,subsubcarpeta_salida, 'data_out.npy'))
 data_in = np.load(os.path.join(carpeta_salida,subcarpeta_salida,subsubcarpeta_salida, 'data_in.npy'))
@@ -167,7 +167,7 @@ i_res_cre = i_res_cre[ind_cre]
 i_res_dec = i_res[:-1]
 i_res_dec = i_res_dec[ind_dec]
 
-fig = plt.figure(figsize=(14, 7), dpi=250)
+fig = plt.figure(figsize=(14, 8), dpi=250)
 ax = fig.add_axes([.12, .15, .75, .8])
 ax.plot(caida_diodo_cre,i_res_cre*1000,'.',label='Flanco creciente',alpha=0.8)
 ax.plot(caida_diodo_dec,i_res_dec*1000,'.',label='Flanco decreciente',alpha=0.8)
@@ -225,7 +225,7 @@ plt.close(fig)
 
 
 
-fig = plt.figure(figsize=(14, 7), dpi=250)
+fig = plt.figure(figsize=(14, 8), dpi=250)
 ax = fig.add_axes([.12, .15, .75, .8])
 ax.plot(tiempo,caida_tot,'-',label=u'Tensión diodo + desistencia',alpha=0.8,linewidth=2)
 ax.plot(tiempo,caida_diodo,'-',label=u'Tensión diodo',alpha=0.8,linewidth=2)
@@ -266,7 +266,7 @@ fft2 = fft2[0:int(len(fft2)/2)+1]
 
 frec = np.arange(0,len(fft1))/len(fft1)*fs/2
 
-fig = plt.figure(figsize=(14, 7), dpi=250)
+fig = plt.figure(figsize=(14, 8), dpi=250)
 ax = fig.add_axes([.12, .15, .35, .8])
 ax.plot(tiempo,caida_res,'-',label=u'Tensión resistencia medida',alpha=0.8,linewidth=2)
 ax.plot(tiempo,caida_res+0.175,'-',label=u'Tensión resistencia corregida',alpha=0.8,linewidth=2)
@@ -300,7 +300,7 @@ caida_res = data_in[0,int(fs*delay):int(fs*(delay+med)),1] +offset#+ np.max(data
 tiempo = np.arange(data_in.shape[1])/fs
 tiempo = tiempo[int(fs*delay):int(fs*(delay+med))]
 
-fig = plt.figure(figsize=(14, 7), dpi=250)
+fig = plt.figure(figsize=(14, 8), dpi=250)
 ax = fig.add_axes([.12, .15, .75, .8])
 ax.plot(tiempo,caida_tot,'-',label=u'Tensión Diodo + Resistencia',alpha=0.8,linewidth=2)
 ax.plot(tiempo,caida_diodo,'-',label=u'Tensión diodo',alpha=0.8,linewidth=2)
