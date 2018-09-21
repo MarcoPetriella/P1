@@ -20,7 +20,8 @@ from sys import stdout
 import numpy.fft as fft
 import os
 from scipy.optimize import curve_fit
-
+from matplotlib import cm
+cmap = cm.get_cmap('jet')
 
 from P1_funciones import play_rec
 from P1_funciones import signalgen
@@ -552,8 +553,7 @@ diodo = '1N4007'
 carpeta_salida = 'CurvaDiodo'
 subcarpeta_salida = 'Temperatura'
 subsubcarpeta_salida = diodo
-temp = 37
-
+temp = 38
 if not os.path.exists(carpeta_salida):
     os.mkdir(carpeta_salida)
     
@@ -619,7 +619,7 @@ diodo = '1N4007'
 carpeta_salida = 'CurvaDiodo'
 subcarpeta_salida = 'Temperatura'
 subsubcarpeta_salida = diodo
-temps = [21,37]
+temps = [12,14,16,18,30,36,38]
 
 resistencia = 84
 delay = 3
@@ -685,7 +685,7 @@ ax = fig.add_axes([.15, .15, .75, .8])
 for i in range(len(temps)): 
     caida_diodo_cre = caida_diodo_cre_tot[i]
     i_res_cre = i_res_cre_tot[i]   
-    ax.plot(caida_diodo_cre,i_res_cre*1000,'.',label='Temp: ' +str(temps[i])+' °C',alpha=0.8)
+    ax.plot(caida_diodo_cre,i_res_cre*1000,'.',color=cmap(float(i)/len(temps)),label='Temp: ' +str(temps[i])+' °C',alpha=0.8)
 
 ax.legend()
 ax.grid(linestyle='--')
