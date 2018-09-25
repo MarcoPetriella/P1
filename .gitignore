@@ -5,8 +5,7 @@ __pycache__/
 
 # C extensions
 *.so
-
-/public/static/LM324/*.npy
+*.npy
 
 # Distribution / packaging
 .Python

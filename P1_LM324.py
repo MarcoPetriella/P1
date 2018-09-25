@@ -795,8 +795,8 @@ for i in range(len(R1s)):
     
     
     # Calibracion de los canales
-    data_in1[:,:,0] = (data_in1[:,:,0]-calibracion_CH0_seno[1])/(calibracion_CH0_seno[0])
-    data_in1[:,:,1] = (data_in1[:,:,1]-calibracion_CH1_seno[1])/(calibracion_CH1_seno[0])
+    data_in1[:,:,0] = (data_in1[:,:,0]-calibracion_CH0_seno[1]*2**16)/(calibracion_CH0_seno[0]*2**16)
+    data_in1[:,:,1] = (data_in1[:,:,1]-calibracion_CH1_seno[1]*2**16)/(calibracion_CH1_seno[0]*2**16)
         
     fft_send = abs(fft.fft(data_out1[0,:,0]))**2/int(data_out1.shape[1]/2+1)/fs
     fft_send = fft_send[0:int(data_out1.shape[1]/2+1)]
@@ -1018,29 +1018,27 @@ plt.close(fig)
 fig = plt.figure(dpi=250)
 ax = fig.add_axes([.10, .15, .35, .8])
 j = 1
-ganancia_array = np.asarray(ganancia[1])
-ajuste_lineal_ganancia = np.polyfit(R2/R1s_array,ganancia_array,1)
-
+ganancia_array = np.asarray(ganancia[j])
 ax.plot(ancho_de_banda_array,ganancia_array,'o',color=cmap(float(j)/len(frec_comp_ganancia)),label=str(frec_comp_ganancia[j]) + ' Hz',markersize=10)
 ax.axhline(50,linestyle='--',color='red',label='Ancho de banda medición')
     
-ax.set_title(u'Ancho de banda vs Ganancia')
+ax.set_title(u'Ganancia vs Ancho de banda')
 ax.set_xlabel('Ancho de banda [Hz]')
 ax.set_ylabel('Ganancia')
-ax.legend(loc=2)
+ax.legend(loc=1)
 ax.grid(linewidth=0.5,linestyle='--')
 
 
 ax1 = fig.add_axes([.60, .15, .35, .8])
-ax1.plot(R2/R1s_array,ancho_de_banda_array,'o',markersize=10)
+ax1.plot(ganancia_array,ganancia_array*ancho_de_banda_array/1000000,'o',color=cmap(float(j)/len(frec_comp_ganancia)),markersize=10,label=str(frec_comp_ganancia[j]) + ' Hz')
 ax1.axvline(50,linestyle='--',color='red',label='Ancho de banda medición')
-ax1.set_title(u'Ancho de banda vs R2/R1')
-ax1.set_xlabel('R2/R1')
-ax1.set_ylabel('Ancho de banda [Hz]')
+ax1.set_title(u'Ganancia*BW vs Ganancia')
+ax1.set_xlabel('Ganancia')
+ax1.set_ylabel('Ganancia*Ancho de banda [MHz]')
 ax1.legend(loc=1)
 ax1.grid(linewidth=0.5,linestyle='--')
 
-figname = os.path.join(carpeta_salida,subcarpeta_salida,subsubcarpeta_salida, 'ganancia_ancho_de_banda.png')
+figname = os.path.join(carpeta_salida,subcarpeta_salida,subsubcarpeta_salida, 'ganancia_ancho_de_banda_1.png')
 fig.savefig(figname, dpi=300)  
 plt.close(fig)
 
@@ -1048,75 +1046,11 @@ plt.close(fig)
 
 
 
-
-
-
-
-
-
-
-#%%
-#%% RESPUESTA AMPLIFICADOR SIN CAPACITOR
+#%% Figuras respuesta RUIDO
 
 carpeta_salida = 'LM324'
 subcarpeta_salida = 'Amplificador'
-subsubcarpeta_salida = 'Respuesta_-5V_sin_c'
-
-if not os.path.exists(carpeta_salida):
-    os.mkdir(carpeta_salida)
-    
-if not os.path.exists(os.path.join(carpeta_salida,subcarpeta_salida)):
-    os.mkdir(os.path.join(carpeta_salida,subcarpeta_salida))     
-    
-if not os.path.exists(os.path.join(carpeta_salida,subcarpeta_salida,subsubcarpeta_salida)):
-    os.mkdir(os.path.join(carpeta_salida,subcarpeta_salida,subsubcarpeta_salida))
-
-
-R2 = 100000
-R1 = 1451
-
-
-fs = 44100*8  
-duracion = 30
-muestras = int(fs*duracion)
-input_channels = 2
-output_channels = 1
-ind_nivel = 9
-mic_level = 50
-
-amplitud_v_chs_out = [0.027,0.027] #V
-amplitud_chs = []
-for i in range(output_channels):
-    amplitud_chs.append(amplitud_v_chs_out[i]/amplitud_v_chs[i,ind_nivel])
-    
-amplitud = amplitud_chs[0]   
-
-# Frecuencias bajas
-frec_ini = 0
-frec_fin = 23000
-output_signal = amplitud*signal.chirp(np.arange(muestras)/fs,frec_fin,duracion,frec_ini)
-ceros = np.zeros(int(fs*1))
-output_signal = np.append(output_signal,ceros,axis=0)
-output_signal = np.append(ceros,output_signal,axis=0)
-data_out1 = np.zeros([1,output_signal.shape[0],output_channels])
-data_out1[0,:,0] = output_signal
-
-
-offset_correlacion = int(fs*(5))
-steps_correlacion = int(fs*(0.1))
-data_in1, retardos1 = play_rec(fs,input_channels,data_out1,'si',offset_correlacion,steps_correlacion)
-
-
-np.save(os.path.join(carpeta_salida,subcarpeta_salida,subsubcarpeta_salida, 'data_out_R2_'+str(R2)+'_R1_'+str(R1)),data_out1)
-np.save(os.path.join(carpeta_salida,subcarpeta_salida,subsubcarpeta_salida, 'data_in_R2_'+str(R2)+'_R1_'+str(R1)),data_in1)
-
-
-###
-#%% Figuras respuesta
-
-carpeta_salida = 'LM324'
-subcarpeta_salida = 'Amplificador'
-subsubcarpeta_salida = 'Respuesta_-5V_sin_c'
+subsubcarpeta_salida = 'Respuesta_-5V'
 
 R2 = 100000
 R1s = [330,386,464,558,667,775,994,1200,1316,1451,1545,1760,2170,3210,4700,6560,8080,9700,14070,20070,29100,48100,62000,100000]
@@ -1130,20 +1064,12 @@ calibracion_CH0_seno = np.load(os.path.join('Calibracion',dato, 'Seno_CH0' +  '_
 calibracion_CH1_seno = np.load(os.path.join('Calibracion',dato, 'Seno_CH1'+  '_wm'+str(mic_level)+'_'+dato+'_ajuste.npy'))
 
 
-frec_comp = 1000
-n = 20
+delay = 0.2
+med = 0.5
 
-frec_comp_bw = [200,21000]
-ancho_de_banda = []
+std_ruido_input = np.array([])
+std_ruido_output = np.array([])
 
-frec_comp_ganancia = [200,1000,3000,5000,10000,15000]
-ganancia = {}
-frec_ind_send_ganancia = {}
-for j in range(len(frec_comp_ganancia)):
-    ganancia[j] = []
-
-fig_tot = plt.figure(dpi=250)
-ax_tot = fig_tot.add_axes([.15, .15, .65, .8])
 
 for i in range(len(R1s)):
     
@@ -1156,219 +1082,23 @@ for i in range(len(R1s)):
     
     
     # Calibracion de los canales
-    data_in1[:,:,0] = (data_in1[:,:,0]-calibracion_CH0_seno[1])/(calibracion_CH0_seno[0])
-    data_in1[:,:,1] = (data_in1[:,:,1]-calibracion_CH1_seno[1])/(calibracion_CH1_seno[0])
+    data_in1[:,:,0] = (data_in1[:,:,0]-calibracion_CH0_seno[1]*2**16)/(calibracion_CH0_seno[0]*2**16)
+    data_in1[:,:,1] = (data_in1[:,:,1]-calibracion_CH1_seno[1]*2**16)/(calibracion_CH1_seno[0]*2**16)
         
-    fft_send = abs(fft.fft(data_out1[0,:,0]))**2/int(data_out1.shape[1]/2+1)/fs
-    fft_send = fft_send[0:int(data_out1.shape[1]/2+1)]
-    fft_acq_input = abs(fft.fft(data_in1[0,:,0]))**2/int(data_in1.shape[1]/2+1)/fs
-    fft_acq_input = fft_acq_input[0:int(data_in1.shape[1]/2+1)]
-    fft_acq_output = abs(fft.fft(data_in1[0,:,1]))**2/int(data_in1.shape[1]/2+1)/fs
-    fft_acq_output = fft_acq_output[0:int(data_in1.shape[1]/2+1)]
     
-    frec_send = np.linspace(0,int(data_out1.shape[1]/2),int(data_out1.shape[1]/2+1))
-    frec_send = frec_send*(fs/2+1)/int(data_out1.shape[1]/2+1)
-    frec_acq = np.linspace(0,int(data_in1.shape[1]/2),int(data_in1.shape[1]/2+1))
-    frec_acq = frec_acq*(fs/2+1)/int(data_in1.shape[1]/2+1)
+    ruido_ch0 =data_in1[0,int(fs*delay):int(fs*delay)+int(fs*med),0]
+    ruido_ch1 =data_in1[0,int(fs*delay):int(fs*delay)+int(fs*med),1]
     
-    frec_ind_acq = np.argmin(np.abs(frec_acq-frec_comp))
-    frec_ind_send = np.argmin(np.abs(frec_send-frec_comp))
-
-    
-#    fig = plt.figure(dpi=250)
-#    ax = fig.add_axes([.15, .15, .32, .8])
-#    ax.semilogy(frec_send,fft_acq_output/fft_acq_output[frec_ind_send],'-', label=u'Output',alpha=0.6,linewidth=2)
-#    ax.semilogy(frec_send,fft_acq_input/fft_acq_input[frec_ind_send],'-', label=u'Input',alpha=0.6,linewidth=2)
-#    ax.semilogy(frec_send,fft_send/fft_send[frec_ind_send],'-', label=u'Send',alpha=0.6,linewidth=2)
-#    
-#    ax.set_xlim([-1000,28000])
-#    ax.set_ylim([1e-3,1e1])
-#    ax.set_title(u'FFT de la señal digital, input y output para amplificador LM324')
-#    ax.set_xlabel('Frecuencia [Hz]')
-#    ax.set_ylabel('Potencia [db]')
-#    ax.legend(loc=1)
-#    ax.grid(linewidth=0.5,linestyle='--')
-#    
-#    ax1 = fig.add_axes([.60, .15, .32, .8])
-#    ax1.semilogy(frec_send,fft_acq_output/fft_acq_output[frec_ind_send],'-', label=u'Output',alpha=0.6,linewidth=2)
-#    ax1.semilogy(frec_send,fft_acq_input/fft_acq_input[frec_ind_send],'-', label=u'Input',alpha=0.6,linewidth=2)
-#    ax1.semilogy(frec_send,fft_send/fft_send[frec_ind_send],'-', label=u'Send',alpha=0.6,linewidth=2)
-#    
-#    ax1.set_xlim([-10,200])
-#    ax1.set_ylim([1e-3,1e1])
-#    ax1.set_title(u'Detalle a baja frecuencia')
-#    ax1.set_xlabel('Frecuencia [Hz]')
-#    ax1.set_ylabel('Potencia [db]')
-#    ax1.legend(loc=1)
-#    ax1.grid(linewidth=0.5,linestyle='--')
-#    
-#    figname = os.path.join(carpeta_salida,subcarpeta_salida,subsubcarpeta_salida, 'chirp_R2'+str(R2)+'_R1_'+str(R1)+'.png')
-#    fig.savefig(figname, dpi=300)  
-#    plt.close(fig)
-    
-    
-    
-    fft_norm_input = fft_acq_input/fft_acq_input[frec_ind_send]/(fft_send/fft_send[frec_ind_send])
-    fft_norm_output = fft_acq_output/fft_acq_output[frec_ind_send]/(fft_send/fft_send[frec_ind_send])
-    fft_norm_norm_output = fft_norm_output/fft_norm_output[frec_ind_send]/(fft_norm_input/fft_norm_input[frec_ind_send])
-    
-    
-#    ## Normalizada
-#    fig = plt.figure(dpi=250)
-#    ax = fig.add_axes([.15, .15, .32, .8])
-#    ax.semilogy(frec_send,fft_norm_input/fft_norm_input[frec_ind_send],'-', label=u'Input',alpha=0.6,linewidth=2)
-#    ax.semilogy(frec_send,fft_norm_output/fft_norm_output[frec_ind_send],'-', label=u'Output',alpha=0.6,linewidth=2)
-#    
-#    ax.set_xlim([-1000,28000])
-#    ax.set_ylim([1e-3,1e1])
-#    ax.set_title(u'FFT normalizada de la señal input y output para seguidor LM324')
-#    ax.set_xlabel('Frecuencia [Hz]')
-#    ax.set_ylabel('Potencia [db]')
-#    ax.legend(loc=1)
-#    ax.grid(linewidth=0.5,linestyle='--')
-#    
-#    ax1 = fig.add_axes([.60, .15, .32, .8])
-#    ax1.semilogy(frec_send,fft_norm_input/fft_norm_input[frec_ind_send],'-', label=u'Input',alpha=0.6,linewidth=2)
-#    ax1.semilogy(frec_send,fft_norm_output/fft_norm_output[frec_ind_send],'-', label=u'Output',alpha=0.6,linewidth=2)
-#    
-#    ax1.set_xlim([-10,200])
-#    ax1.set_ylim([1e-3,1e1])
-#    ax1.set_title(u'Detalle a baja frecuencia')
-#    ax1.set_xlabel('Frecuencia [Hz]')
-#    ax1.set_ylabel('Potencia [db]')
-#    ax1.legend(loc=1)
-#    ax1.grid(linewidth=0.5,linestyle='--')
-#    
-#    figname = os.path.join(carpeta_salida,subcarpeta_salida,subsubcarpeta_salida, 'chirp_normalizada_R2'+str(R2)+'_R1_'+str(R1)+'.png')
-#    fig.savefig(figname, dpi=300)  
-#    plt.close(fig)
-    
-    
-    
-    ## Normalizada filtrada
-    fft_acq_input_filt = np.convolve(fft_acq_input,np.ones(n)/n,mode='valid')
-    fft_acq_output_filt = np.convolve(fft_acq_output,np.ones(n)/n,mode='valid')
-    fft_send_filt = fft_send[0:fft_acq_input_filt.shape[0]]
-    frec_send_filt = frec_send[0:fft_acq_input_filt.shape[0]]
-    
-    fft_acq_input_filt = fft_acq_input_filt[::n]
-    fft_acq_output_filt= fft_acq_output_filt[::n]
-    fft_send_filt = fft_send_filt[::n]
-    frec_send_filt = frec_send_filt[::n]
-    
-    frec_ind_send = np.argmin(np.abs(fft_send_filt-frec_comp))
-    
-    
-    fft_norm_input_filt = fft_acq_input_filt/fft_acq_input_filt[frec_ind_send]/(fft_send_filt/fft_send_filt[frec_ind_send])
-    fft_norm_output_filt = fft_acq_output_filt/fft_acq_output_filt[frec_ind_send]/(fft_send_filt/fft_send_filt[frec_ind_send])
-    fft_norm_norm_output_filt = fft_norm_output_filt/fft_norm_output_filt[frec_ind_send]/(fft_norm_input_filt/fft_norm_input_filt[frec_ind_send])
-    
-    
-    
-    fig = plt.figure(dpi=250)
-    ax = fig.add_axes([.15, .15, .32, .8])
-    ax.semilogy(frec_send_filt,fft_norm_input_filt/fft_norm_input_filt[frec_ind_send],'-', label=u'Input',alpha=0.6,linewidth=2)
-    ax.semilogy(frec_send_filt,fft_norm_output_filt/fft_norm_output_filt[frec_ind_send],'-', label=u'Output',alpha=0.6,linewidth=2)
-    
-    ax.set_xlim([-1000,25000])
-    ax.set_ylim([1e-3,1e1])
-    ax.set_title(u'FFT normalizada de la señal input y output para seguidor LM324 - Filtrada')
-    ax.set_xlabel('Frecuencia [Hz]')
-    ax.set_ylabel('Potencia [db]')
-    ax.legend(loc=1)
-    ax.grid(linewidth=0.5,linestyle='--')
-    
-    ax1 = fig.add_axes([.60, .15, .32, .8])
-    ax1.semilogy(frec_send_filt,fft_norm_input_filt/fft_norm_input_filt[frec_ind_send],'-', label=u'Input',alpha=0.6,linewidth=2)
-    ax1.semilogy(frec_send_filt,fft_norm_output_filt/fft_norm_output_filt[frec_ind_send],'-', label=u'Output',alpha=0.6,linewidth=2)
-    
-    ax1.set_xlim([-10,200])
-    ax1.set_ylim([1e-3,1e1])
-    ax1.set_title(u'Detalle a baja frecuencia')
-    ax1.set_xlabel('Frecuencia [Hz]')
-    ax1.set_ylabel('Potencia [db]')
-    ax1.legend(loc=1)
-    ax1.grid(linewidth=0.5,linestyle='--')
-    
-    figname = os.path.join(carpeta_salida,subcarpeta_salida,subsubcarpeta_salida, 'chirp_normalizada_filtrada_R2'+str(R2)+'_R1_'+str(R1)+'.png')
-    fig.savefig(figname, dpi=300)  
-    plt.close(fig)
-    
-    ax_tot.semilogy(frec_send_filt,fft_norm_output_filt/fft_norm_output_filt[frec_ind_send],'-',color=cmap(float(i)/len(R1s)), label=u'R2/R1: ' + '{:6.2f}'.format(R2/R1) ,alpha=0.6,linewidth=2)
-
-    # Ancho de banda
-    frec_ind_send_lim_ini = np.argmin(np.abs(frec_send_filt-frec_comp_bw[0]))   
-    frec_ind_send_lim_fin = np.argmin(np.abs(frec_send_filt-frec_comp_bw[1])) 
-    ind_bw = np.argmin(np.abs(fft_norm_output_filt[frec_ind_send_lim_ini:frec_ind_send_lim_fin]/fft_norm_output_filt[frec_ind_send]-0.5))
-    frec_bw = frec_send_filt[frec_ind_send_lim_ini+ind_bw]  
-    ancho_de_banda.append(frec_bw)
+    std_ruido_input = np.append(std_ruido_input,np.std(ruido_ch0))
+    std_ruido_output = np.append(std_ruido_output,np.std(ruido_ch1))
 
 
-    # Ganancia
-    for j in range(len(frec_comp_ganancia)):
-        frec_ind_send_ganancia[j] = np.argmin(np.abs(frec_send_filt-frec_comp_ganancia[j])) 
-    
-    for j in range(len(frec_comp_ganancia)):
-        ganancia[j].append(np.sqrt(fft_acq_output_filt[frec_ind_send_ganancia[j]]/fft_acq_input_filt[frec_ind_send_ganancia[j]]))
-
-
-
-ax_tot.set_xlim([-1000,23000])
-ax_tot.set_ylim([1e-3,1e1])
-ax_tot.set_title(u'FFT normalizada de la señal input y output para seguidor LM324 - Filtrada')
-ax_tot.set_xlabel('Frecuencia [Hz]')
-ax_tot.set_ylabel('Potencia [db]')
-ax_tot.legend(bbox_to_anchor=(1.15, 0.00))
-ax_tot.grid(linewidth=0.5,linestyle='--')
-figname = os.path.join(carpeta_salida,subcarpeta_salida,subsubcarpeta_salida, 'respuestas_r1.png')
-fig_tot.savefig(figname, dpi=300)  
-
-ax_tot.set_ylim([1e-2,1e1])
-figname = os.path.join(carpeta_salida,subcarpeta_salida,subsubcarpeta_salida, 'respuestas_r1_zoom.png')
-fig_tot.savefig(figname, dpi=300)  
-plt.close(fig_tot)
-
-ax_tot.set_xlim([-10,2000])
-ax_tot.set_ylim([1e-3,1e1])
-figname = os.path.join(carpeta_salida,subcarpeta_salida,subsubcarpeta_salida, 'respuestas_r1_zoom2.png')
-fig_tot.savefig(figname, dpi=300)  
-plt.close(fig_tot)
-
-
+plt.plot(std_ruido_input,'o')
+plt.plot(std_ruido_output,'o')
 
 
 R1s_array = np.asarray(R1s)
 ancho_de_banda_array = np.asarray(ancho_de_banda)
 
-fig = plt.figure(dpi=250)
-ax = fig.add_axes([.10, .15, .35, .8])
-for j in range(len(frec_comp_ganancia)):
-    ganancia_array = np.asarray(ganancia[j])
-    ajuste_lineal_ganancia = np.polyfit(R2/R1s_array,ganancia_array,1)
-
-    ax.plot(R2/R1s_array,ganancia_array,'o',color=cmap(float(j)/len(frec_comp_ganancia)),label=str(frec_comp_ganancia[j]) + ' Hz',markersize=10)
-    
-#    if j == 0:
-#        ax.plot(R2/R1s_array,R2/R1s_array*ajuste_lineal_ganancia[0] + ajuste_lineal_ganancia[1],'--',color=cmap(float(j)/len(frec_comp_ganancia)),label='Ajuste')
-#        ax.text(0.1,0.8,'Ajuste: ax + b',color=cmap(float(j)/len(frec_comp_ganancia)), transform=ax.transAxes)
-#        ax.text(0.1,0.75,'a: ' '{:6.3f}'.format(ajuste_lineal_ganancia[0]),color=cmap(float(j)/len(frec_comp_ganancia)), transform=ax.transAxes)
-#        ax.text(0.1,0.70,'b: ' '{:6.3f}'.format(ajuste_lineal_ganancia[1]),color=cmap(float(j)/len(frec_comp_ganancia)), transform=ax.transAxes)
-    
-ax.set_title(u'Ganancia vs R2/R1')
-ax.set_xlabel('R2/R1')
-ax.set_ylabel('Ganancia')
-ax.legend(loc=2)
-ax.grid(linewidth=0.5,linestyle='--')
-
-
-ax1 = fig.add_axes([.60, .15, .35, .8])
-ax1.plot(R2/R1s_array,ancho_de_banda_array,'o',markersize=10)
-ax1.set_title(u'Ancho de banda vs R2/R1')
-ax1.set_xlabel('R2/R1')
-ax1.set_ylabel('Ancho de banda [Hz]')
-ax1.legend(loc=2)
-ax1.grid(linewidth=0.5,linestyle='--')
-
-figname = os.path.join(carpeta_salida,subcarpeta_salida,subsubcarpeta_salida, 'ganancia_ancho_de_banda.png')
-fig.savefig(figname, dpi=300)  
-plt.close(fig)
+plt.plot(std_ruido_input,'o')
+plt.plot(R2/R1s_array,std_ruido_output/std_ruido_input,'o')
