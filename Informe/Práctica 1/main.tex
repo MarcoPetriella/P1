@@ -148,7 +148,7 @@ En el mismo gráfico mostramos la desviación estándar al aplicar de un filtro 
         \hline
         Máxima tensión de entrada  & 2.10 V\\
         \hline
-        Ruido a la entrada &  $1 \frac{\mu V}{\sqrt{Hz}}$ para nivel micrófono 70/100\\
+        Ruido a la entrada & $1 \frac{\mu V}{\sqrt{Hz}}$ para nivel micrófono 70/100\\
         % \hline
         % ADSDASD & ADASDAD\\
         \hline
@@ -242,7 +242,68 @@ Dependencia con la temperatura... \ref{fig:curva_diodo_creciente_temperatura}
 
 
 \subsection*{Op-amp}
-\subsubsection*{Curva de ganancia}
+
+\subsubsection*{Seguidor}
+
+\begin{figure} [H]
+\centering
+\includegraphics[scale=0.45]{seguidor.png}
+\caption{ Esquema seguidor\label{fig:seguidor}}
+\end{figure} 
+
+\begin{figure} [H]
+\centering
+\includegraphics[scale=0.45]{salida_diodo_recortada.png}
+\caption{ Seguidor alimentado con 0 V\label{fig:salida_diodo_recortada}}
+\end{figure} 
+
+\begin{figure} [H]
+\centering
+\includegraphics[scale=0.45]{salida_diodo.png}
+\caption{ Seguidor alimentado con -5 V\label{fig:salida_diodo}}
+\end{figure} 
+
+\begin{figure} [H]
+\centering
+\includegraphics[scale=0.45]{chirp_normalizada.png}
+\caption{ Seguidor alimentado con -5 V\label{fig:chirp_normalizada}}
+\end{figure} 
+
+
+\subsubsection*{Amplificador}
+
+\begin{figure} [H]
+\centering
+\includegraphics[scale=0.45]{amplificador.png}
+\caption{ Esquema amplificador no inversor\label{fig:amplificador}}
+\end{figure} 
+
+
+\begin{figure} [H]
+\centering
+\includegraphics[scale=0.45]{salida_amplificador.png}
+\caption{ Amplificador\label{fig:salida_amplificador}}
+\end{figure} 
+
+\begin{figure} [H]
+\centering
+\includegraphics[scale=0.45]{respuestas_r1.png}
+\caption{ Amplificador\label{fig:respuestas_r1}}
+\end{figure} 
+
+\begin{figure} [H]
+\centering
+\includegraphics[scale=0.45]{ganancia_ancho_de_banda.png}
+\caption{ Amplificador\label{fig:ganancia_ancho_de_banda}}
+\end{figure} 
+
+\begin{figure} [H]
+\centering
+\includegraphics[scale=0.45]{ganancia_ancho_de_banda_1.png}
+\caption{ Amplificador\label{fig:ganancia_ancho_de_banda_1}}
+\end{figure} 
+
+
 El objetivo es medir la ganancia para dsitintas frecuencias. 
 \subsubsection*{frecuencia de corte}
 La idea aquí es armar un amplificador inversor y medir la frecuencia de corte para distintas ganancias. Para esto hay que tener en cuenta el rango de tensión que podemos medir con la placa, es decir variar las resistencias del amplificador para que la ganancia no sea tal que la señal sature
