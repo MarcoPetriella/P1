@@ -66,14 +66,14 @@ if not os.path.exists(os.path.join(carpeta_salida,subcarpeta_salida)):
     os.mkdir(os.path.join(carpeta_salida,subcarpeta_salida))     
 
 # Genero matriz de señales: ejemplo de barrido en frecuencias en el canal 0
-ind_nivel = 6
-mic_level = 70
+ind_nivel = 9
+mic_level = 10
 fs = 44100*8  
 duracion = 13
 muestras = int(fs*duracion)
 input_channels = 2
 output_channels = 1
-amplitud_v_chs_out = [1.0,1.0] #V
+amplitud_v_chs_out = [0.3,0.3] #V
 amplitud_chs = []
 for i in range(output_channels):
     amplitud_chs.append(amplitud_v_chs_out[i]/amplitud_v_chs[i,ind_nivel])
@@ -101,8 +101,8 @@ offset_correlacion = 0#int(fs*(1))
 steps_correlacion = 0#int(fs*(1))
 data_in, retardos = play_rec(fs,input_channels,data_out,'si',offset_correlacion,steps_correlacion,dato=dato)
 
-np.save(os.path.join(carpeta_salida,subcarpeta_salida, dato+'_data_out'),data_out)
-np.save(os.path.join(carpeta_salida,subcarpeta_salida, dato+'_data_in'),data_in)
+np.save(os.path.join(carpeta_salida,subcarpeta_salida, dato+'_data_out_mic' +str(mic_level)),data_out)
+np.save(os.path.join(carpeta_salida,subcarpeta_salida, dato+'_data_in_'+str(mic_level)),data_in)
 
 
 
@@ -112,9 +112,10 @@ np.save(os.path.join(carpeta_salida,subcarpeta_salida, dato+'_data_in'),data_in)
 dato = 'int16' 
 carpeta_salida = 'Crosstalk'
 subcarpeta_salida = dato
+mic_level = 10
 
-data_out = np.load(os.path.join(carpeta_salida,subcarpeta_salida, dato+'_data_out.npy'))
-data_in = np.load(os.path.join(carpeta_salida,subcarpeta_salida, dato+'_data_in.npy'))
+data_out = np.load(os.path.join(carpeta_salida,subcarpeta_salida, dato+'_data_out_mic' +str(mic_level)+'.npy'))
+data_in = np.load(os.path.join(carpeta_salida,subcarpeta_salida, dato+'_data_in_mic' +str(mic_level)+'.npy'))
 
 calibracion_CH0_seno = np.load(os.path.join('Calibracion',dato, 'Seno_CH0'+  '_wm'+str(mic_level)+'_'+dato+'_ajuste.npy'))
 calibracion_CH1_seno = np.load(os.path.join('Calibracion',dato, 'Seno_CH1'+   '_wm'+str(mic_level)+'_'+dato+'_ajuste.npy'))
@@ -170,7 +171,7 @@ ax.set_xlabel('Frecuencia [Hz]')
 ax.set_ylabel('Potencia [$\mathregular{V^2}$sec]')
 #ax.set_title(u'Medición de crosstalk. Potencia de señal en dos canales. Señal enviada a 1023 Hz')
 ax.legend(loc=1)
-figname = os.path.join(carpeta_salida,subcarpeta_salida, 'crosstalk.png')
+figname = os.path.join(carpeta_salida,subcarpeta_salida, 'crosstalk_mic' +str(mic_level)+'.png')
 fig.savefig(figname, dpi=300)  
 plt.close(fig) 
        

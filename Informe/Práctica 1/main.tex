@@ -102,7 +102,7 @@ Luego se comprobó que el rango de la entrada está limitado en aproximadamente 
 \begin {center}
  \begin{tabular} {|c|c|}
         \hline
-        Nivel de micrófono &  $1/a  [\mu V/cuenta]$ \\
+        Nivel de micrófono &  1/a  $[\mu V/cuenta]$ \\
         \hline
         10/100 & 939\\
         \hline
@@ -179,12 +179,12 @@ En el mismo gráfico mostramos la desviación estándar al aplicar de un filtro 
 \end{figure} 
 
 \subsection*{Crosstalk}
-Por otro lado medimos crosstalk entre canales. Para ello enviamos una señal seno a una frecuencia de 1023 Hz en el canal CH0 y medimos un cero en el canal CH1, y luego medimos en los gráficos de densidad de potencia espectral las relación señal a ruido de ambos canales (Figura \ref{fig:crosstalk} ). En este caso obtenemos un valor de SNR de orden 12 en el canal CH0 y de orden 2 en el canal CH1,  y por lo tanto a una relación de SNR de orden 10 entre canales (equivalente a un orden 5 en amplitud).  Es decir que si medimos señales del orden de 1 V en el canal CH0 es esperable un nivel de señal de 10 mV en el canal CH1.
+Por otro lado medimos crosstalk entre canales. Para ello enviamos una señal seno a una frecuencia de 1023 Hz en el canal CH0 y medimos un cero en el canal CH1, y luego medimos en los gráficos de densidad de potencia espectral las relación señal a ruido de ambos canales (Figura \ref{fig:crosstalk_mic100} ). En este caso obtenemos un valor de SNR de orden 12 en el canal CH0 y de orden 2 en el canal CH1,  y por lo tanto a una relación de SNR de orden 10 entre canales (equivalente a un orden 5 en amplitud).  Es decir que si medimos señales del orden de 1 V en el canal CH0 es esperable un nivel de señal de 10 mV en el canal CH1.
 
 \begin{figure} [H]
 \centering
-\includegraphics[scale=0.45]{crosstalk.png}
-\caption{Crosstalk entre canales CH0 y CH1. \label{fig:crosstalk}}
+\includegraphics[scale=0.45]{crosstalk_mic100.png}
+\caption{Crosstalk entre canales CH0 y CH1. \label{fig:crosstalk_mic100}}
 \end{figure} 
 
 \subsection*{Resolución en frecuencias}
@@ -202,19 +202,19 @@ A continuación nos propusimos medir la exactitud y la resolución en frecuencia
 A modo de conclusión, pudimos confeccionar la siguiente tabla que resume las características principales del sistema:
 \begin {table}[H]
 \begin {center}
- \begin{tabular} {|c|c|}
+ \begin{tabular} {|l|c|}
         \hline
         Ancho de banda & 20kHz \\
         \hline
-        Rango de frecuencia & 14Hz - 20kHz\\
+        Rango de frecuencia & 14 Hz - 20 kHz\\
         \hline
-        Máxima tensión de salida  & 3V\\
+        Máxima tensión de salida  & 3 V\\
         \hline
         Máxima tensión de entrada  & 2.10 V\\
         \hline
         Resolución de la entrada  & 16 bits\\
         \hline
-        Ruido entrada (@ fs: 352800 Hz)  &  \\
+	\multicolumn{2}{|l|}{Ruido entrada (@ fs: 352800 Hz)} \tabularnewline
         \hline
         0 V (@ mic 10/100) & Std: 1.036 cts (973 $\mu V$)  - 8.5 $ \frac{\mu V}{\sqrt{Hz}}$ \\
         0 V (@ mic 100/100) & Std: 1.558 cts (26 $\mu V$) - 0.38 $ \frac{\mu V}{\sqrt{Hz}}$ \\
@@ -222,16 +222,17 @@ A modo de conclusión, pudimos confeccionar la siguiente tabla que resume las ca
          seno 1023 Hz, 0.3 V amp (@ mic 10/100) & 9.1 $ \frac{\mu V}{\sqrt{Hz}}$\\
 	seno 1023 Hz, 0.3 V amp (@ mic 100/100) & 0.49 $ \frac{\mu V}{\sqrt{Hz}}$\\
         \hline
-        SNR potencia (@ fs: 352800 Hz)  &  \\
+	\multicolumn{2}{|l|}{SNR potencia (@ fs: 352800 Hz)} \tabularnewline
         \hline
-         seno 1023 Hz, 0.3 V amp (@ mic 10/100) & 9.5 db \\
-	seno 1023 Hz, 0.3 V amp (@ mic 100/100) & 12.0 db \\
+         seno 1023 Hz, 0.3 V amp (@ mic 10/100) & 95 db \\
+	seno 1023 Hz, 0.3 V amp (@ mic 100/100) & 120 db \\
 	\hline
-        Crosstalk potencia (CH0 a CH1) (@ fs: 352800 Hz) & \\
+	\multicolumn{2}{|l|}{Crosstalk potencia (CH0 a CH1) (@ fs: 352800 Hz)} \tabularnewline
 	\hline
-        seno 1023 Hz, 1.0 V amp (@ mic 70/100) & 10.5 db \\
+        seno 1023 Hz, 0.3 V amp (@ mic 10/100) & 91 db \\
+	seno 1023 Hz, 0.3 V amp (@ mic 100/100) & 97 db \\
         \hline
-       Frecuencia (@ fs: 44100 Hz) & \\
+\multicolumn{2}{|l|}{Frecuencia (@ fs: 44100 Hz) } \tabularnewline
         \hline
 	Exactitud (@ seno 1023 Hz, 0.5 V Amp, 1000 s)  & 1 mHz (1 ppm @ 1000 Hz) \\
 	Resolución (@ seno 1023 Hz, 0.5 V Amp, 1000 s) & 1 mHz (1 ppm @ 1000 Hz) \\
@@ -394,10 +395,17 @@ La idea aquí es armar un amplificador inversor y medir la frecuencia de corte p
 
 \section*{Anexo:}
 \subsection*{Programa de adquisición}
-El programa de adquisición permite la utilización de la placa de audio de la pc como un generador de funciones (parlante) de dos canales y un osciloscopio de dos canales, utilizando la librería pyaudio. La función encargada de la adquisición acepta una matriz de tres dimensiones donde se guarda la señal que se quiere enviar en cada canal de salida. La matriz es de tres dimensiones. La primera dimensión es la cantidad de pasos del barrido que se quiere realizar. La segunda es la cantidad de muestras enviadas y depende de la duración de la señal enviada y la frecuencia de sampleo según la relación $muestras=frec_sampleo*duracion_signal$. La tercera dimensión indica el canal de salida (CH0 y CH1).
+El programa de adquisición permite la utilización de la placa de audio de la pc como un generador de funciones (parlante) de dos canales y un osciloscopio de dos canales, utilizando la librería pyaudio. La función encargada de la adquisición (\textit{playrec}) acepta una matriz de tres dimensiones donde se guarda la señal que se quiere enviar en cada canal de salida. La primera dimensión es la cantidad de pasos del barrido que se quiere realizar. La segunda es la cantidad de muestras enviadas y depende de la duración de la señal enviada y la frecuencia de sampleo según la relación $muestras=frec_{sampleo}*duracion_{signal}$. La tercera dimensión indica el canal de salida (CH0 y CH1).
 Una vez que se recibe la matriz, se definen los buffer de salida y de entrada. El buffer de salida tiene el tamaño en bytes equivalente a cada fila del barrido. El buffer de entrada es siempre más grande, pues se contempla la adquisición de ceros al principio de la medición debido al retardo entre la señal enviada y la señal adquirida. Además se obliga a que el número de muestras del buffer de entrada sea múltiplo de una potencia de 2.
 Una vez definido los buffers se lanzan dos hilos de procesamiento encargados de la escritura de los datos en el buffer de salida (hilo productor) y la lectura de los datos del buffer de entrada (hilo consumidor). La comunicación entre los dos hilos se realiza con dos variables de tipo lock. La primera se activa cada vez que el productor escribe la señal en el buffer de salida y avisa al consumidor que puede empezar la adquisición. El segundo lock se activa en el consumidor cada vez que se termina de leer el buffer de entrada y se guardó la señal en la matriz de salida, y avisa al productor que puede comenzar el envío del siguiente paso del barrido.
 Por último se agrega la posibilidad de corregir el retardo de la medición a partir de encontrar el máximo de la correlación cruzada entre la señal digital enviada y la señal adquirida.
+
+\begin{figure} [H]
+\centering
+\includegraphics[scale=0.85]{esquema_adquisicion.png}
+\caption{Esquema de adquisición. \label{fig:esquema_adquisiciona}}
+\end{figure} 
+
 
 \subsection*{Ejemplo}
 La señal de salida digital es de tipo float32 y debe ser menor al valor 1 (uno). Los valores mayores a 1 espejan la señal alrededor del éste valor. En la Figura \ref{fig:senal_sintetica} se muestra un ejemplo de señal enviada en los canales CH0 y CH1. 
