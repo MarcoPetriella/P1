@@ -108,10 +108,10 @@ np.save(os.path.join(carpeta_salida,subcarpeta_salida, dato+'_data_in'),data_in)
 
 #%%
 
-# CAlibracion para nivel de parlante 70, y nivel de microfono de 80
-# En este valor de nivel de parlante Amplitud = 1 ==> 1V de amplitud
-# En este nivel de parlante la señal de amplitud 1 (1V) ocupa todo el rango de medición
-# Esto vale para la placa de pc de escritorio de casa de Marco y windows 10
+
+dato = 'int16' 
+carpeta_salida = 'Crosstalk'
+subcarpeta_salida = dato
 
 data_out = np.load(os.path.join(carpeta_salida,subcarpeta_salida, dato+'_data_out.npy'))
 data_in = np.load(os.path.join(carpeta_salida,subcarpeta_salida, dato+'_data_in.npy'))
@@ -166,10 +166,9 @@ ax.semilogy(frec_acq,fft_acq_ch1,'-',color='red', label=u'Canal sin señal - SNR
 ax.set_xlim([1010,1040])
 ax.set_ylim([1e-15,1e1])
 ax.grid(linestyle='--')
-ax.set_title(u'FFT de la señal enviada y adquirida')
 ax.set_xlabel('Frecuencia [Hz]')
 ax.set_ylabel('Potencia [$\mathregular{V^2}$sec]')
-ax.set_title(u'Medición de crosstalk. Potencia de señal en dos canales. Señal enviada a 1023 Hz')
+#ax.set_title(u'Medición de crosstalk. Potencia de señal en dos canales. Señal enviada a 1023 Hz')
 ax.legend(loc=1)
 figname = os.path.join(carpeta_salida,subcarpeta_salida, 'crosstalk.png')
 fig.savefig(figname, dpi=300)  

@@ -202,7 +202,7 @@ for mic_level in mic_levels:
             ax.text(0.1,0.70,'b: ' '{:6.2e}'.format(ajuste[1]) + ' [cuentas]', transform=ax.transAxes)
             ax.set_xlabel('Señal enviada [V]')
             ax.set_ylabel('Señal recibida [cuentas]')
-            ax.set_title(u'Señal enviada y adquirida en ' + canales[j] + ' utilizando función ' + formas[i] + '. Nivel de parlante en '+ str(windows_nivel[ind_nivel]) +'/100 y microfono '+str(mic_level)+'/100' )
+            #ax.set_title(u'Señal enviada y adquirida en ' + canales[j] + ' utilizando función ' + formas[i] + '. Nivel de parlante en '+ str(windows_nivel[ind_nivel]) +'/100 y microfono '+str(mic_level)+'/100' )
             figname = os.path.join(carpeta_salida,subcarpeta_salida, 'ajuste_'+canales[j]+ '_'+formas[i]+  '_wm'+str(mic_level)+'_'+dato+'.png')
             fig.savefig(figname, dpi=300)  
             plt.close(fig)
@@ -215,7 +215,7 @@ for mic_level in mic_levels:
             ax.set_xlabel('Señal enviada [V]')
             ax.set_ylabel('Señal recibida [V]')   
             ax.grid(linestyle='--')
-            ax.set_title(u'Señal enviada y adquirida en ' + canales[j] + ' utilizando función ' + formas[i] + '. Nivel de parlante en '+ str(windows_nivel[ind_nivel]) +'/100 y microfono '+str(mic_level)+'/100' )
+            #ax.set_title(u'Señal enviada y adquirida en ' + canales[j] + ' utilizando función ' + formas[i] + '. Nivel de parlante en '+ str(windows_nivel[ind_nivel]) +'/100 y microfono '+str(mic_level)+'/100' )
             figname = os.path.join(carpeta_salida,subcarpeta_salida, 'conversion_'+canales[j]+ '_'+formas[i]+  '_wm'+str(mic_level)+'_'+dato+'.png')
             fig.savefig(figname, dpi=300)  
             plt.close(fig)        
@@ -225,6 +225,9 @@ for mic_level in mic_levels:
         
         
 #%%
+
+carpeta_salida = 'Calibracion'
+subcarpeta_salida = dato
 
 mic_levels = [10,20,30,40,50,60,70,80,90,100]
 ind_nivel = 2
@@ -254,7 +257,7 @@ ax.legend()
 ax.set_ylim([0.1,100])
 ax.set_xlabel('Nivel de micrófono')
 ax.set_ylabel(u'Rango positivo receptor [V]')   
-ax.set_title(u'Rango del receptor en función del nivel del micrófono.')   
+#ax.set_title(u'Rango del receptor en función del nivel del micrófono.')   
 figname = os.path.join(carpeta_salida, 'respuesta_por_nivel_microfono_rango.png')
 fig.savefig(figname, dpi=300)  
 plt.close(fig)    
@@ -287,7 +290,9 @@ plt.close(fig)
 #plt.close(fig)
 
 #%%
-        
+       
+carpeta_salida = 'Calibracion'
+subcarpeta_salida = dato 
         
 ind_nivel = 2
 mic_level = 100      
@@ -311,7 +316,7 @@ ax.axhline(2**15,linestyle='--',color='black',alpha=0.8)
 ax.axhline(-2**15,linestyle='--',color='black',alpha=0.8)    
 ax.set_xlabel('Señal enviada [V]')
 ax.set_ylabel('Señal recibida [cuentas]')    
-ax.set_title(u'Señal recibida al variar el nivel de micrófono')   
+#ax.set_title(u'Señal recibida al variar el nivel de micrófono')   
 ax.grid(linestyle='--')    
 ax.legend()
 #ax.legend(bbox_to_anchor=(1.05, 1.00))
@@ -321,6 +326,9 @@ plt.close(fig)
 
 
 #%%
+
+carpeta_salida = 'Calibracion'
+subcarpeta_salida = dato
 
 windows_nivel = np.array([10,20,30,40,50,60,70,80,90,100])
 tension_rms_v_ch0 = np.array([0.050, 0.142, 0.284, 0.441, 0.678, 0.884, 1.143, 1.484, 1.771, 2.280])
@@ -336,7 +344,27 @@ ax.grid(linestyle='--')
 ax.legend()
 ax.set_xlabel('Nivel de parlante')
 ax.set_ylabel(u'Amplitud señal enviada [V]')   
-ax.set_title(u'Amplitud de señal enviada en función de nivel de parlante. Amplitud de salida = 1')   
+#ax.set_title(u'Amplitud de señal enviada en función de nivel de parlante. Amplitud de salida = 1')   
 figname = os.path.join(carpeta_salida, 'respuesta_por_nivel_parlante.png')
 fig.savefig(figname, dpi=300)  
 plt.close(fig)
+
+
+#%%
+
+dato = 'int16' 
+carpeta_salida = 'Calibracion'
+subcarpeta_salida = dato
+mic_level = 100      
+
+mic_levels = [10,20,30,40,50,60,70,80,90,100]
+
+
+for i,mic_level in enumerate(mic_levels):
+    
+    calibracion_CH0_seno = np.load(os.path.join('Calibracion',dato, 'Seno_CH0'+  '_wm'+str(mic_level)+'_'+dato+'_ajuste.npy'))
+    calibracion_CH1_seno = np.load(os.path.join('Calibracion',dato, 'Seno_CH1' +  '_wm'+str(mic_level)+'_'+dato+'_ajuste.npy'))
+    
+    print(1/calibracion_CH0_seno[0]*1000000)
+    #print(2**15/calibracion_CH0_seno[0])
+     
