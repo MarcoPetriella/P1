@@ -67,12 +67,12 @@ if not os.path.exists(os.path.join(carpeta_salida,subcarpeta_salida)):
 
 # Genero matriz de señales: ejemplo de barrido en frecuencias en el canal 0
 ind_nivel = 9
-mic_level = 10
+mic_level = 100
 fs = 44100*8  
 duracion = 13
 muestras = int(fs*duracion)
 input_channels = 2
-output_channels = 1
+output_channels = 2
 amplitud_v_chs_out = [0.3,0.3] #V
 amplitud_chs = []
 for i in range(output_channels):
@@ -91,8 +91,9 @@ for i in range(pasos):
     fr = frec_ini + i*delta_frec
     duration = duracion
     
-    output_signal = signalgen('sine',fr,amp,duration,fs)
+    output_signal = signalgen('sine',fr,amp,duration,fs)    
     data_out[i,:,0] = output_signal
+    data_out[i,:,1] = np.zeros(muestras)
         
 
 
@@ -102,7 +103,7 @@ steps_correlacion = 0#int(fs*(1))
 data_in, retardos = play_rec(fs,input_channels,data_out,'si',offset_correlacion,steps_correlacion,dato=dato)
 
 np.save(os.path.join(carpeta_salida,subcarpeta_salida, dato+'_data_out_mic' +str(mic_level)),data_out)
-np.save(os.path.join(carpeta_salida,subcarpeta_salida, dato+'_data_in_'+str(mic_level)),data_in)
+np.save(os.path.join(carpeta_salida,subcarpeta_salida, dato+'_data_in_mic'+str(mic_level)),data_in)
 
 
 
@@ -112,7 +113,7 @@ np.save(os.path.join(carpeta_salida,subcarpeta_salida, dato+'_data_in_'+str(mic_
 dato = 'int16' 
 carpeta_salida = 'Crosstalk'
 subcarpeta_salida = dato
-mic_level = 10
+mic_level = 100
 
 data_out = np.load(os.path.join(carpeta_salida,subcarpeta_salida, dato+'_data_out_mic' +str(mic_level)+'.npy'))
 data_in = np.load(os.path.join(carpeta_salida,subcarpeta_salida, dato+'_data_in_mic' +str(mic_level)+'.npy'))

@@ -128,6 +128,12 @@ subsubcarpeta_salida = diodo
 frec_ini = 500
 frec_fin = 500
 
+dato = 'int16'    
+ind_nivel = 9
+mic_level = 70
+fs = 44100*8  
+
+
 data_out = np.load(os.path.join(carpeta_salida,subcarpeta_salida,subsubcarpeta_salida, 'data_out.npy'))
 data_in = np.load(os.path.join(carpeta_salida,subcarpeta_salida,subsubcarpeta_salida, 'data_in.npy'))
 
@@ -239,7 +245,7 @@ ax.plot(tiempo,caida_diodo,'-',label=u'Tensión diodo',alpha=0.8,linewidth=2)
 ax.plot(tiempo,caida_res,'-',label=u'Tensión resistencia',alpha=0.8,linewidth=2)
 ax.legend()
 ax.grid(linestyle='--')
-ax.set_xlabel(u'Tiempo [seg]')
+ax.set_xlabel(u'Tiempo [s]')
 ax.set_ylabel(u'Tensión [V]')
 ax.set_xlim([delay+0.1,delay+0.11])
 ax.set_ylim([-1.5,1.5])
@@ -279,7 +285,7 @@ ax.plot(tiempo,caida_res,'-',label=u'Tensión resistencia medida',alpha=0.8,line
 ax.plot(tiempo,caida_res+offset,'-',label=u'Tensión resistencia corregida',alpha=0.8,linewidth=2)
 ax.legend()
 ax.grid(linestyle='--')
-ax.set_xlabel(u'Tiempo [seg]')
+ax.set_xlabel(u'Tiempo [s]')
 ax.set_ylabel(u'Tensión [V]')
 ax.set_xlim([delay+0.1,delay+0.106])
 ax.set_ylim([-1.0,1.0])
@@ -314,7 +320,7 @@ ax.plot(tiempo,caida_diodo,'-',label=u'Tensión diodo',alpha=0.8,linewidth=2)
 ax.plot(tiempo,caida_res,'-',label=u'Tensión resistencia',alpha=0.8,linewidth=2)
 ax.legend()
 ax.grid(linestyle='--')
-ax.set_xlabel(u'Tiempo [seg]')
+ax.set_xlabel(u'Tiempo [s]')
 ax.set_ylabel(u'Tensión [V]')
 ax.set_xlim([delay+0.0,delay+0.10])
 ax.set_ylim([-1.5,1.5])
@@ -369,7 +375,7 @@ ax.text(0.7,0.75,'c: ' '{:6.2e}'.format(popt_fit[2]) + ' [V]', transform=ax.tran
 
 ax.legend()
 ax.grid(linestyle='--')
-ax.set_xlabel(u'Tiempo [seg]')
+ax.set_xlabel(u'Tiempo [s]')
 ax.set_ylabel(u'Tensión [V]')
 ax.set_xlim([delay+0.0,delay+0.1])
 ax.set_ylim([-1.5,1.5])

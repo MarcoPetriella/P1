@@ -631,6 +631,7 @@ np.save(os.path.join(carpeta_salida,subcarpeta_salida,subsubcarpeta_salida, 'dat
 carpeta_salida = 'LM324'
 subcarpeta_salida = 'Amplificador'
 subsubcarpeta_salida = '-5V'
+frec_ini = 500
 
 R2 = 100000
 R1 = 4600    
