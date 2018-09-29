@@ -25,6 +25,7 @@ cmap = cm.get_cmap('jet')
 from P1_funciones import play_rec
 from P1_funciones import signalgen
 from P1_funciones import sincroniza_con_trigger
+from P1_funciones import par2ind
 
 params = {'legend.fontsize': 14,
           'figure.figsize': (14, 9),
@@ -42,17 +43,15 @@ pylab.rcParams.update(params)
 #%%
 # CALIBRACION PLACA MARCO PC CASA
 
-windows_nivel = np.array([10,20,30,40,50,60,70,80,90,100])
-tension_rms_v_ch0 = np.array([0.050, 0.142, 0.284, 0.441, 0.678, 0.884, 1.143, 1.484, 1.771, 2.280])
-amplitud_v_ch0 = tension_rms_v_ch0*np.sqrt(2)
-tension_rms_v_ch1 = np.array([0.050, 0.146, 0.291, 0.451, 0.693, 0.904, 1.170, 1.518, 1.812, 2.330])
-amplitud_v_ch1 = tension_rms_v_ch1*np.sqrt(2)
-
+carpeta_salida = 'Calibracion'
+subcarpeta_salida = 'Parlante'
+# Calibracion parlante
+amplitud_v_ch0 = np.load(os.path.join(carpeta_salida,subcarpeta_salida, 'wp_amp_ch0.npy'))
+amplitud_v_ch1 = np.load(os.path.join(carpeta_salida,subcarpeta_salida, 'wp_amp_ch1.npy'))
+parlante_levels = np.load(os.path.join(carpeta_salida,subcarpeta_salida, 'parlante_levels.npy'))
 amplitud_v_chs = np.array([amplitud_v_ch0,amplitud_v_ch1])
 
-
-#plt.plot(windows_nivel,amplitud_v_ch0,'o')
-#plt.plot(windows_nivel,amplitud_v_ch1,'o')    
+mic_levels = [10,20,30,40,50,60,70,80,90,100]  
 #%%
 
 dato = 'int16' 
@@ -65,7 +64,8 @@ if not os.path.exists(os.path.join(carpeta_salida,subcarpeta_salida)):
     os.mkdir(os.path.join(carpeta_salida,subcarpeta_salida))  
 
 # Genero matriz de señales: ejemplo de barrido en frecuencias en el canal 0
-ind_nivel = 9
+par_level = 100
+ind_nivel = par2ind(par_level,parlante_levels)
 mic_level = 50    
    
 fs = 44100*8  
@@ -105,7 +105,8 @@ dato = 'int16'
 carpeta_salida = 'Ruido'
 subcarpeta_salida = dato
 
-ind_nivel = 9
+par_level = 100
+ind_nivel = par2ind(par_level,parlante_levels)
 mic_level = 50    
 
 calibracion_CH0_seno = np.load(os.path.join('Calibracion',dato, 'Seno_CH0' +  '_wm'+str(mic_level)+'_'+dato+'_ajuste.npy'))
@@ -236,7 +237,8 @@ plt.close(fig)
 
 
 # Genero matriz de señales: ejemplo de barrido en frecuencias en el canal 0
-ind_nivel = 2
+par_level = 30
+ind_nivel = par2ind(par_level,parlante_levels)
 mic_level = 100    
 
 dato = 'int16'    
@@ -282,9 +284,9 @@ np.save(os.path.join(carpeta_salida,subcarpeta_salida, 'data_in_'+str(mic_level)
 
 #%%
 
-mic_levels = [10,20,30,40,50,60,70,80,90,100]
 fs = 44100*8  
-ind_nivel = 6
+par_level = 70
+ind_nivel = par2ind(par_level,parlante_levels)
 dato='int16'
 
 carpeta_salida = 'Ruido'
@@ -386,7 +388,8 @@ plt.close(fig)
 
 #%% RUIDO POR SNR
 
-ind_nivel = 6
+par_level = 70
+ind_nivel = par2ind(par_level,parlante_levels)
 mic_level = 100    
 
 dato = 'int16'    
@@ -434,9 +437,10 @@ np.save(os.path.join(carpeta_salida,subcarpeta_salida, 'data_in_'+str(mic_level)
 
 #%%
 
-mic_levels = [10,20,30,40,50,60,70,80,90,100]
-ind_nivel = 6
+
 dato='int16'
+par_level = 70
+ind_nivel = par2ind(par_level,parlante_levels)
 fs = 44100*8  
 carpeta_salida = 'Ruido'
 subcarpeta_salida = 'SNR'
@@ -538,7 +542,8 @@ plt.close(fig)
 #%% RUIDO EN FRECUENCIA
 
 # Genero matriz de señales: ejemplo de barrido en frecuencias en el canal 0
-ind_nivel = 6
+par_level = 70
+ind_nivel = par2ind(par_level,parlante_levels)
 mic_level = 70    
 
 dato = 'int16'    
@@ -590,7 +595,8 @@ for i in range(len(factor)):
     
 #%%
 
-ind_nivel = 6
+par_level = 70
+ind_nivel = par2ind(par_level,parlante_levels)
 mic_level = 70  
 
 carpeta_salida = 'Ruido'
@@ -678,8 +684,8 @@ plt.close(fig)
 carpeta_salida = 'Ruido'
 subcarpeta_salida = 'Frecuencia'
 dato = 'int16'   
-
-ind_nivel = 6
+par_level = 70
+ind_nivel = par2ind(par_level,parlante_levels)
 mic_level = 70     
 fs_base = 44100  
 duracion_trigger = 0.5

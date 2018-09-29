@@ -549,3 +549,16 @@ def sincroniza_con_trigger1(trigger,data_in,offset_correlacion=0,steps_correlaci
         
         
     return data_in_corrected, retardos, corr
+
+
+def par2ind(par_level,parlante_levels):
+    
+    for i in range(parlante_levels.shape[0]):
+        
+        if parlante_levels[i] == par_level:
+            break
+        
+    return i
+    
+    
+    

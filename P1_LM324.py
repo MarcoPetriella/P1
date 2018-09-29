@@ -28,6 +28,8 @@ from P1_funciones import play_rec
 from P1_funciones import signalgen
 from P1_funciones import signalgen_corrected
 from P1_funciones import sincroniza_con_trigger
+from P1_funciones import par2ind
+
 
 params = {'legend.fontsize': 14,
           'figure.figsize': (14, 9),
@@ -41,14 +43,17 @@ pylab.rcParams.update(params)
 
 
 #%%
+# CALIBRACION PLACA MARCO PC CASA
 
-windows_nivel = np.array([10,20,30,40,50,60,70,80,90,100])
-tension_rms_v_ch0 = np.array([0.050, 0.142, 0.284, 0.441, 0.678, 0.884, 1.143, 1.484, 1.771, 2.280])
-amplitud_v_ch0 = tension_rms_v_ch0*np.sqrt(2)
-tension_rms_v_ch1 = np.array([0.050, 0.146, 0.291, 0.451, 0.693, 0.904, 1.170, 1.518, 1.812, 2.330])
-amplitud_v_ch1 = tension_rms_v_ch1*np.sqrt(2)
-
+carpeta_salida = 'Calibracion'
+subcarpeta_salida = 'Parlante'
+# Calibracion parlante
+amplitud_v_ch0 = np.load(os.path.join(carpeta_salida,subcarpeta_salida, 'wp_amp_ch0.npy'))
+amplitud_v_ch1 = np.load(os.path.join(carpeta_salida,subcarpeta_salida, 'wp_amp_ch1.npy'))
+parlante_levels = np.load(os.path.join(carpeta_salida,subcarpeta_salida, 'parlante_levels.npy'))
 amplitud_v_chs = np.array([amplitud_v_ch0,amplitud_v_ch1])
+
+mic_levels = [10,20,30,40,50,60,70,80,90,100]  
 
 #%%
 
@@ -75,7 +80,8 @@ if not os.path.exists(os.path.join(carpeta_salida,subcarpeta_salida,subsubcarpet
 
 # Genero matriz de señales: ejemplo de barrido en frecuencias en el canal 0
 dato = 'int16'    
-ind_nivel = 9
+par_level = 100
+ind_nivel = par2ind(par_level,parlante_levels)
 mic_level = 50
 fs = 44100*8  
 duracion = 1
@@ -194,7 +200,8 @@ if not os.path.exists(os.path.join(carpeta_salida,subcarpeta_salida,subsubcarpet
 
 # Genero matriz de señales: ejemplo de barrido en frecuencias en el canal 0
 dato = 'int16'    
-ind_nivel = 9
+par_level = 100
+ind_nivel = par2ind(par_level,parlante_levels)
 mic_level = 50
 fs = 44100*8  
 duracion = 1
@@ -316,7 +323,8 @@ if not os.path.exists(os.path.join(carpeta_salida,subcarpeta_salida,subsubcarpet
 
 # Genero matriz de señales: ejemplo de barrido en frecuencias en el canal 0
 dato = 'int16'    
-ind_nivel = 9
+par_level = 100
+ind_nivel = par2ind(par_level,parlante_levels)
 mic_level = 50
 fs = 44100*8  
 duracion = 1
@@ -443,7 +451,8 @@ duracion = 30
 muestras = int(fs*duracion)
 input_channels = 2
 output_channels = 1
-ind_nivel = 9
+par_level = 100
+ind_nivel = par2ind(par_level,parlante_levels)
 mic_level = 50
 
 amplitud_v_chs_out = [1.5,1.5] #V
@@ -578,7 +587,8 @@ R1 = 4600
 
 # Genero matriz de señales: ejemplo de barrido en frecuencias en el canal 0
 dato = 'int16'    
-ind_nivel = 9
+par_level = 100
+ind_nivel = par2ind(par_level,parlante_levels)
 mic_level = 50
 fs = 44100*8  
 duracion = 1
@@ -721,7 +731,8 @@ duracion = 30
 muestras = int(fs*duracion)
 input_channels = 2
 output_channels = 1
-ind_nivel = 9
+par_level = 100
+ind_nivel = par2ind(par_level,parlante_levels)
 mic_level = 50
 
 amplitud_v_chs_out = [0.027,0.027] #V
@@ -763,7 +774,8 @@ R1s = [271,330,386,464,558,667,775,994,1200,1316,1451,1545,1760,2170,3210,4700,6
 
 dato = 'int16'    
 fs = 44100*8  
-ind_nivel = 9
+par_level = 100
+ind_nivel = par2ind(par_level,parlante_levels)
 mic_level = 50
 
 calibracion_CH0_seno = np.load(os.path.join('Calibracion',dato, 'Seno_CH0' +  '_wm'+str(mic_level)+'_'+dato+'_ajuste.npy'))
@@ -985,6 +997,8 @@ ax = fig.add_axes([.10, .15, .35, .8])
 for j in range(len(frec_comp_ganancia)):
     ganancia_array = np.asarray(ganancia[j])
     ajuste_lineal_ganancia = np.polyfit(R2/R1s_array,ganancia_array,1)
+    
+    print(ajuste_lineal_ganancia[0],ajuste_lineal_ganancia[1])
 
     ax.plot(R2/R1s_array,ganancia_array,'o',color=cmap(float(j)/len(frec_comp_ganancia)),label=str(frec_comp_ganancia[j]) + ' Hz',markersize=10)
     
@@ -1066,7 +1080,8 @@ R1s = [330,386,464,558,667,775,994,1200,1316,1451,1545,1760,2170,3210,4700,6560,
 
 dato = 'int16'    
 fs = 44100*8  
-ind_nivel = 9
+par_level = 100
+ind_nivel = par2ind(par_level,parlante_levels)
 mic_level = 50
 
 calibracion_CH0_seno = np.load(os.path.join('Calibracion',dato, 'Seno_CH0' +  '_wm'+str(mic_level)+'_'+dato+'_ajuste.npy'))

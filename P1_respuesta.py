@@ -35,6 +35,15 @@ params = {'legend.fontsize': 14,
 pylab.rcParams.update(params)
 
 
+#%%
+carpeta_salida = 'Calibracion'
+subcarpeta_salida = 'Parlante'
+# Calibracion parlante
+amplitud_v_ch0 = np.load(os.path.join(carpeta_salida,subcarpeta_salida, 'wp_amp_ch0.npy'))
+amplitud_v_ch1 = np.load(os.path.join(carpeta_salida,subcarpeta_salida, 'wp_amp_ch1.npy'))
+parlante_levels = np.load(os.path.join(carpeta_salida,subcarpeta_salida, 'parlante_levels.npy'))
+mic_levels = [10,20,30,40,50,60,70,80,90,100]
+
 
 #%%
 

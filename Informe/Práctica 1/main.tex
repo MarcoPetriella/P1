@@ -52,8 +52,10 @@ A modo de comparación consideramos también la respuesta en frecuencias al envi
 \subsection*{Calibración de canales de salida y entrada de la placa}
 \subsubsection*{Parlante}
 La calibración de la señal de salida (o parlante) se realizó enviando un seno de frecuencia 500 Hz en ambos canales (CH0 y CH1). Se varió el nivel del parlante de la consola de Windows 10 a la vez que se midió con un multímetro el valor de tensión RMS en modo tensión alterna. La conversión de RMS a amplitud para un seno sigue la relación:
-$Amplitud[V]={RMS}{\sqrt2}$.
-La calibración se realizó con la máxima amplitud de salida posible, es decir $Amplitud_{digital}=1$. En la Figura \ref{fig:calib_parlante} se muestra la curva de amplitud en función del nivel de parlante para los canales CH0 y CH1 de salida. Y la máxima tensión de salida es de 3V para un nivel de parlante 100/100.
+\[
+Amplitud[V]=RMS[V]{\sqrt2}
+\]
+La calibración se realizó con la máxima amplitud de salida posible, es decir $Amplitud_{digital}=1$. En la Figura \ref{fig:calib_parlante} se muestra la curva de amplitud en función del nivel de parlante para los canales CH0 y CH1 de salida. Y la máxima tensión de salida es de 3.2 V para un nivel de parlante 100/100.
 
 \begin{figure} [H]
 \centering
@@ -212,7 +214,7 @@ A modo de conclusión, pudimos confeccionar la siguiente tabla que resume las ca
         \hline
         Rango de frecuencia & 14 Hz - 20 kHz\\
         \hline
-        Máxima tensión de salida  & 3 V\\
+        Máxima tensión de salida  & 3.2 V\\
         \hline
         Máxima tensión de entrada  & 2.10 V\\
         \hline
@@ -312,13 +314,13 @@ Donde $K$ es la constante de Boltzmann, $T$ la temperatura del diodo, y $q$ la c
 Para variar la temperatura del diodo se dispuso una fuente de corriente con control PI diseñada para estabilizar la temperatura al utilizar celdas Peltiers. La fuente modelo Wavelength 3293, utiliza un termistor de 10K para medir la temperatura, y dispone de una entrada ($V_{set}$) para fijar la temperatura deseada y dos salidas de tensión para monitorear las temperaturas fijada ($T_{set}$) y actual ($T_{act}$). Para la conversión de tensión a temperatura, necesaria para determinar $V_{set}$ $T_{set}$ y $T_{act}$, se utilizan los coeficientes de Steinhart del termistor y la corriente de bias ($I_{bias}$) fijada en el termistor  de 100  ${\mu A}$. Para ello basta considerar la ecuación del Steinhart del termistor:
 
 \[
-\frac{1}{T} = A + Bln(R)+ Cln(R)^3
+\frac{1}{T} = A + B\ln(R)+ C[\ln(R)]^3
 \]
 
 Donde T es la temperatura, y ,A B C los coeficientes de Steinhart del termistor.
 
 \[
-\frac{1}{T_{set,act}} = A + Bln(\frac{V_{set,act}}{I_{bias}})+ Cln(\frac{V_{set,act}}{I_{bias}})^3
+\frac{1}{T_{set,act}} = A + B\ln(\frac{V_{set,act}}{I_{bias}})+ C[\ln(\frac{V_{set,act}}{I_{bias}})]^3
 \]
 
 De esta manera relacionamos las tensiones actual y fijada ($V_{act}$ y $V_{set}$) con las temperaturas actual y fijada ($T_{act}$ y $T_{set}$). Para el control del experimento se utilizó una Arduino Due que permitió tanto la medición de la tensión actual ($V_{act}$) como la el ajuste de la tensión deseada ($V_{set}$) a partir de la salida digital-analógica DAC0.  La comunicación entre la Arduino Due y la PC se realizó con la librería PySerial. En la Figura \ref{fig:esquema_temp} se muestra un esquema del dispositivo experimental.

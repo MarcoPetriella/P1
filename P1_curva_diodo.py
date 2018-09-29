@@ -29,6 +29,8 @@ from P1_funciones import play_rec
 from P1_funciones import signalgen
 from P1_funciones import signalgen_corrected
 from P1_funciones import sincroniza_con_trigger
+from P1_funciones import par2ind
+
 
 params = {'legend.fontsize': 14,
           'figure.figsize': (14, 9),
@@ -41,15 +43,17 @@ pylab.rcParams.update(params)
 
 
 
+
 #%%
-
-windows_nivel = np.array([10,20,30,40,50,60,70,80,90,100])
-tension_rms_v_ch0 = np.array([0.050, 0.142, 0.284, 0.441, 0.678, 0.884, 1.143, 1.484, 1.771, 2.280])
-amplitud_v_ch0 = tension_rms_v_ch0*np.sqrt(2)
-tension_rms_v_ch1 = np.array([0.050, 0.146, 0.291, 0.451, 0.693, 0.904, 1.170, 1.518, 1.812, 2.330])
-amplitud_v_ch1 = tension_rms_v_ch1*np.sqrt(2)
-
+carpeta_salida = 'Calibracion'
+subcarpeta_salida = 'Parlante'
+# Calibracion parlante
+amplitud_v_ch0 = np.load(os.path.join(carpeta_salida,subcarpeta_salida, 'wp_amp_ch0.npy'))
+amplitud_v_ch1 = np.load(os.path.join(carpeta_salida,subcarpeta_salida, 'wp_amp_ch1.npy'))
+parlante_levels = np.load(os.path.join(carpeta_salida,subcarpeta_salida, 'parlante_levels.npy'))
 amplitud_v_chs = np.array([amplitud_v_ch0,amplitud_v_ch1])
+
+mic_levels = [10,20,30,40,50,60,70,80,90,100]
 
 #%%
 
@@ -73,7 +77,8 @@ if not os.path.exists(os.path.join(carpeta_salida,subcarpeta_salida,subsubcarpet
 
 # Genero matriz de señales: ejemplo de barrido en frecuencias en el canal 0
 dato = 'int16'    
-ind_nivel = 9
+par_level = 100
+ind_nivel = par2ind(par_level,parlante_levels)
 mic_level = 70
 fs = 44100*8  
 duracion = 5
@@ -129,7 +134,8 @@ frec_ini = 500
 frec_fin = 500
 
 dato = 'int16'    
-ind_nivel = 9
+par_level = 100
+ind_nivel = par2ind(par_level,parlante_levels)
 mic_level = 70
 fs = 44100*8  
 
@@ -405,7 +411,8 @@ if not os.path.exists(os.path.join(carpeta_salida,subcarpeta_salida,subsubcarpet
 
 # Genero matriz de señales: ejemplo de barrido en frecuencias en el canal 0
 dato = 'int16'    
-ind_nivel = 9
+par_level = 100
+ind_nivel = par2ind(par_level,parlante_levels)
 mic_level = 70
 fs = 44100*8  
 duracion = 1
@@ -581,7 +588,8 @@ if not os.path.exists(os.path.join(carpeta_salida,subcarpeta_salida,subsubcarpet
 
 # Genero matriz de señales: ejemplo de barrido en frecuencias en el canal 0
 dato = 'int16'    
-ind_nivel = 9
+par_level = 100
+ind_nivel = par2ind(par_level,parlante_levels)
 mic_level = 70
 fs = 44100*8  
 duracion = 5
