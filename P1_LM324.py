@@ -788,7 +788,7 @@ n = 20
 frec_comp_bw = [200,21000]
 ancho_de_banda = []
 
-frec_comp_ganancia = [200,2000,3500,5000,10000,15000]
+frec_comp_ganancia = [200,1000,2000,3500,5000,10000,15000]
 ganancia = {}
 frec_ind_send_ganancia = {}
 for j in range(len(frec_comp_ganancia)):
@@ -1007,6 +1007,8 @@ for j in range(len(frec_comp_ganancia)):
 #        ax.text(0.1,0.8,'Ajuste: ax + b',color=cmap(float(j)/len(frec_comp_ganancia)), transform=ax.transAxes)
 #        ax.text(0.1,0.75,'a: ' '{:6.3f}'.format(ajuste_lineal_ganancia[0]),color=cmap(float(j)/len(frec_comp_ganancia)), transform=ax.transAxes)
 #        ax.text(0.1,0.70,'b: ' '{:6.3f}'.format(ajuste_lineal_ganancia[1]),color=cmap(float(j)/len(frec_comp_ganancia)), transform=ax.transAxes)
+
+ax.plot(R2/R1s_array,1 + R2/R1s_array,'--',color='red',label='Ganancia teórica',linewidth=2)
 
 ax.set_xlim([0,400])    
 ax.set_ylim([0,400])    
