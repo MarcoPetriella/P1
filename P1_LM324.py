@@ -923,7 +923,7 @@ for i in range(len(R1s)):
     ax.semilogy(frec_send_filt,fft_norm_output_filt/fft_norm_output_filt[frec_ind_send],'-', label=u'Output',alpha=0.6,linewidth=2)
     
     ax.set_xlim([-1000,25000])
-    ax.set_ylim([1e-3,1e1])
+    ax.set_ylim([-30,10])
     #ax.set_title(u'FFT normalizada de la señal input y output para seguidor LM324 - Filtrada')
     ax.set_xlabel('Frecuencia [Hz]')
     ax.set_ylabel('Potencia [db]')
@@ -946,7 +946,7 @@ for i in range(len(R1s)):
     fig.savefig(figname, dpi=300)  
     plt.close(fig)
     
-    ax_tot.semilogy(frec_send_filt,fft_norm_output_filt/fft_norm_output_filt[frec_ind_send],'-',color=cmap(float(i)/len(R1s)), label=u'R2/R1: ' + '{:6.2f}'.format(R2/R1) ,alpha=0.6,linewidth=2)
+    ax_tot.plot(frec_send_filt,10*np.log10(fft_norm_output_filt/fft_norm_output_filt[frec_ind_send]),'-',color=cmap(float(i)/len(R1s)), label=u'R2/R1: ' + '{:6.2f}'.format(R2/R1) ,alpha=0.6,linewidth=2)
 
     # Ancho de banda
     frec_ind_send_lim_ini = np.argmin(np.abs(frec_send_filt-frec_comp_bw[0]))   
@@ -966,7 +966,7 @@ for i in range(len(R1s)):
 
 
 ax_tot.set_xlim([-1000,23000])
-ax_tot.set_ylim([1e-3,1e1])
+ax_tot.set_ylim([-30,10])
 #ax_tot.set_title(u'FFT normalizada de la señal input y output para seguidor LM324 - Filtrada')
 ax_tot.set_xlabel('Frecuencia [Hz]')
 ax_tot.set_ylabel('Potencia [db]')
@@ -975,13 +975,13 @@ ax_tot.grid(linewidth=0.5,linestyle='--')
 figname = os.path.join(carpeta_salida,subcarpeta_salida,subsubcarpeta_salida, 'respuestas_r1.png')
 fig_tot.savefig(figname, dpi=300)  
 
-ax_tot.set_ylim([1e-2,1e1])
+ax_tot.set_ylim([-20,10])
 figname = os.path.join(carpeta_salida,subcarpeta_salida,subsubcarpeta_salida, 'respuestas_r1_zoom.png')
 fig_tot.savefig(figname, dpi=300)  
 plt.close(fig_tot)
 
 ax_tot.set_xlim([-10,2000])
-ax_tot.set_ylim([1e-3,1e1])
+ax_tot.set_ylim([-30,10])
 figname = os.path.join(carpeta_salida,subcarpeta_salida,subsubcarpeta_salida, 'respuestas_r1_zoom2.png')
 fig_tot.savefig(figname, dpi=300)  
 plt.close(fig_tot)
@@ -1014,7 +1014,7 @@ ax.set_xlim([0,400])
 ax.set_ylim([0,400])    
 #ax.set_title(u'Ganancia vs R2/R1')
 ax.set_xlabel('R2/R1')
-ax.set_ylabel('Ganancia')
+ax.set_ylabel('Ganancia Tensión')
 ax.legend(loc=2)
 ax.grid(linewidth=0.5,linestyle='--')
 
@@ -1058,7 +1058,7 @@ ax1.plot(ganancia_array,ganancia_array*ancho_de_banda_array/1000000,'o',color=cm
 ax1.axvline(50,linestyle='--',color='red',label='Ancho de banda medición')
 ax1.set_xlim([0,400])     
 #ax1.set_title(u'Ganancia*BW vs Ganancia')
-ax1.set_xlabel('Ganancia')
+ax1.set_xlabel('Ganancia Tensión')
 ax1.set_ylabel('Ganancia*Ancho de banda [MHz]')
 ax1.legend(loc=1)
 ax1.grid(linewidth=0.5,linestyle='--')
@@ -1066,6 +1066,45 @@ ax1.grid(linewidth=0.5,linestyle='--')
 figname = os.path.join(carpeta_salida,subcarpeta_salida,subsubcarpeta_salida, 'ganancia_ancho_de_banda_1.png')
 fig.savefig(figname, dpi=300)  
 plt.close(fig)
+
+##
+
+fig = plt.figure(dpi=250)
+ax = fig.add_axes([.10, .15, .35, .8])
+j = 0
+
+#ax.semilogx(ancho_de_banda_array,-20*np.log(ancho_de_banda_array),'--',color='red',label='20 db/decada')
+
+for j in range(len(frec_comp_ganancia)):
+    ganancia_array = np.asarray(ganancia[j])
+    ax.semilogx(ancho_de_banda_array,10*np.log10(ganancia_array),'o',color=cmap(float(j)/len(frec_comp_ganancia)),label=str(frec_comp_ganancia[j]) + ' Hz',markersize=10)
+
+ax.semilogx(ancho_de_banda_array,60.5-10*np.log10(ancho_de_banda_array),'--',color='red',label='10 db/decada')
+ax.axvline(20000,linestyle='--',color='red',label='Ancho de banda medición')   
+ax.set_ylim([0,20])    
+ 
+#ax.set_title(u'Ganancia vs Ancho de banda')
+ax.set_xlabel('Ancho de banda [Hz]')
+ax.set_ylabel('Ganancia Tensión')
+ax.legend(loc=1)
+ax.grid(linewidth=0.5,linestyle='--')
+
+j = 0
+ganancia_array = np.asarray(ganancia[j])
+ax1 = fig.add_axes([.60, .15, .35, .8])
+ax1.plot(ganancia_array,ganancia_array*ancho_de_banda_array/1000000,'o',color=cmap(float(j)/len(frec_comp_ganancia)),markersize=10,label=str(frec_comp_ganancia[j]) + ' Hz')
+ax1.axvline(50,linestyle='--',color='red',label='Ancho de banda medición')
+ax1.set_xlim([0,400])     
+#ax1.set_title(u'Ganancia*BW vs Ganancia')
+ax1.set_xlabel('Ganancia Tensión')
+ax1.set_ylabel('Ganancia*Ancho de banda [MHz]')
+ax1.legend(loc=1)
+ax1.grid(linewidth=0.5,linestyle='--')
+
+figname = os.path.join(carpeta_salida,subcarpeta_salida,subsubcarpeta_salida, 'ganancia_ancho_de_banda_1_loglog.png')
+fig.savefig(figname, dpi=300)  
+plt.close(fig)
+
 
 
 

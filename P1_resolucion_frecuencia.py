@@ -203,7 +203,8 @@ np.save(os.path.join(carpeta_salida,subcarpeta_salida,subsubcarpeta_salida, dato
 #%% Figuras
 
 fs = 44100  
-
+frec_1 = 1003.020
+frec_2 = 1003.022
 carpeta_salida = 'EstudioFrecuencia'
 subcarpeta_salida = 'Resolucion'
 subsubcarpeta_salida = str(fs)
@@ -233,14 +234,14 @@ ind_frec = np.argmin(np.abs(frec_acq-frec_1))
 
 fig = plt.figure(dpi=250)
 ax = fig.add_axes([.15, .15, .75, .8])
-ax.semilogy(frec_acq,fft_acq_ch0/fft_acq_ch0[ind_frec],'-',color='blue', label=u'Medición',alpha=0.7)
-ax.semilogy(frec_acq,fft_out_ch0/fft_out_ch0[ind_frec],'-',color='red', label=u'Digital',alpha=0.7)
+ax.plot(frec_acq,10*np.log10(fft_acq_ch0/fft_acq_ch0[ind_frec]),'-',color='blue', label=u'Medición',alpha=0.7)
+ax.plot(frec_acq,10*np.log10(fft_out_ch0/fft_out_ch0[ind_frec]),'-',color='red', label=u'Digital',alpha=0.7)
 ax.set_xlim([1002.99,1003.06])
-ax.set_ylim([1e-28,1e1])
+ax.set_ylim([-300,50])
 
 ax.grid(linestyle='--')
 ax.set_xlabel('Frecuencia [Hz]')
-ax.set_ylabel('Potencia [db]')
+ax.set_ylabel('Potencia [dB]')
 ax.legend(loc=1)
 
 figname = os.path.join(carpeta_salida,subcarpeta_salida,subsubcarpeta_salida, 'resolucion_frecuencia.png')

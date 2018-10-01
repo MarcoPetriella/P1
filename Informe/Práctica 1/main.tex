@@ -26,14 +26,14 @@ El objetivo fue caracterizar distintos componentes electrónicos utilizando la p
 
 \section*{Caracterización de la placa}
 \subsection*{Respuesta en frecuencia}
-Para conocer la respuesta en frecuencias del sistema emisor-receptor propusimos mandar una señal que contenga un rango amplio de frecuencias y estudiar la respuesta a partir de una única medición. En nuestro caso decidimos la utilización de una señal sinusoidal con un chirp en frecuencias de tipo lineal y frecuencias de 0 a 23 kHz. En  figura  \ref{fig:chirp} se observa un detalle de la señal chirp enviada a baja frecuencia y la señal medida. 
+Para conocer la respuesta en frecuencias del sistema emisor-receptor propusimos mandar una señal que contenga un rango amplio de frecuencias y estudiar la respuesta a partir de una única medición. En nuestro caso decidimos la utilización de una señal sinusoidal con un chirp en frecuencias de tipo lineal y frecuencias de 0 a 23 kHz. En la Figura  \ref{fig:chirp} se observa un detalle de la señal chirp enviada a baja frecuencia y la señal medida. 
 
 \begin{figure} [H]
 \centering
 \includegraphics[scale=0.45]{chirp_baja_tiempo.png}
-\caption{Detalle de seal sinusoidal con chirp enviada y adquirida con el sistema.\label{fig:chirp}}
+\caption{Detalle de la señal sinusoidal con chirp enviada y adquirida con el sistema.\label{fig:chirp}}
 \end{figure}
-En la Figura \ref{fig:chirp_detalle} se observa el espectro en potencia de la señal digital enviada y la señal adquirida ambas normalizadas a valor correspondiente a 10000 Hz, donde la respuesta es plana. En el gráfico se observa cómo la respuesta del sistema emisor-receptor está limitada a aproximadamente 21 kHz mientras la de la señal digital llega a los 23 kHz. Si prestamos atención a las bajas frecuencias observamos un ripple en el espectro, tanto en la señal digital enviada como en la medida (Figura \ref{fig:chirp_detalle} derecha). Esto se debe a que la señal digital enviada empieza y termina con un cero de manera abrupta. Una forma de atenuar este tipo de ripple es suavizando el inicio y final de señal digital enviada. En nuestro caso decidimos normalizar la respuesta en frecuencias de la señal enviada por la esperada de la señal digital obteniendo la respuesta real (Figura \ref{fig:chirp_detalle} izquierda). De esta manera calculamos el ancho de banda del sistema a partir de los valores de frecuencia para los cuales la potencia cae a la mitad siendo de 14 Hz a 20187 Hz.
+En la Figura \ref{fig:chirp_detalle} se observa el espectro en potencia de la señal digital enviada y la señal adquirida ambas normalizadas a valor correspondiente a 10000 Hz, donde la respuesta es plana. En el gráfico se observa cómo la respuesta del sistema emisor-receptor está limitada a aproximadamente 21 kHz mientras la de la señal digital llega a los 23 kHz. Si prestamos atención a las bajas frecuencias observamos un ripple en el espectro, tanto en la señal digital enviada como en la medida (Figura \ref{fig:chirp_detalle} derecha). Esto se debe a que la señal digital enviada empieza y termina con un cero de manera abrupta. Una forma de atenuar este tipo de ripple es suavizando el inicio y final de señal digital enviada. En nuestro caso decidimos normalizar la respuesta en frecuencias de la señal enviada por la esperada de la señal digital obteniendo la respuesta real (Figura \ref{fig:chirp_detalle} izquierda). De esta manera calculamos el ancho de banda del sistema a partir de los valores de frecuencia para los cuales la potencia cae a la mitad siendo de 7 Hz a 20187 Hz.
 
 \begin{figure} [H]
 \centering
@@ -212,7 +212,7 @@ A modo de conclusión, pudimos confeccionar la siguiente tabla que resume las ca
         \hline
         Ancho de banda & 20kHz \\
         \hline
-        Rango de frecuencia & 14 Hz - 20 kHz\\
+        Rango de frecuencia & 7 Hz - 20 kHz\\
         \hline
         Máxima tensión de salida  & 3.2 V\\
         \hline
@@ -230,13 +230,13 @@ A modo de conclusión, pudimos confeccionar la siguiente tabla que resume las ca
         \hline
 	\multicolumn{2}{|l|}{SNR potencia (@ fs: 352800 Hz)} \tabularnewline
         \hline
-         seno 1023 Hz, 0.3 V amp (@ mic 10/100) & 95 db \\
-	seno 1023 Hz, 0.3 V amp (@ mic 100/100) & 120 db \\
+         seno 1023 Hz, 0.3 V amp (@ mic 10/100) & 95 dB \\
+	seno 1023 Hz, 0.3 V amp (@ mic 100/100) & 120 dB \\
 	\hline
 	\multicolumn{2}{|l|}{Crosstalk potencia (CH0 a CH1) (@ fs: 352800 Hz)} \tabularnewline
 	\hline
-        seno 1023 Hz, 0.3 V amp (@ mic 10/100) & 91 db \\
-	seno 1023 Hz, 0.3 V amp (@ mic 100/100) & 97 db \\
+        seno 1023 Hz, 0.3 V amp (@ mic 10/100) & 91 dB \\
+	seno 1023 Hz, 0.3 V amp (@ mic 100/100) & 97 dB \\
         \hline
 \multicolumn{2}{|l|}{Frecuencia (@ fs: 44100 Hz) } \tabularnewline
         \hline
