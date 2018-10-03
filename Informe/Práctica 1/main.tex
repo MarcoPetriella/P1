@@ -431,12 +431,13 @@ Para estudiar la ganancia consideramos el gráfico de la Figura \ref{fig:gananci
 \caption{ Izquierda: Ganancia del amplificador en función de R2/R1. Observese que la linealidad de la ganancia con R2/R1 es válida para ganacias bajas o frecuencias de señal bajas. Derecha: ancho de banda en fucnión de R2/R1 obtenido a partir de las curvas del gráfico de la Figura anterior. \label{fig:ganancia_ancho_de_banda}}
 \end{figure} 
 
-A continuación (Figura \ref{fig:ganancia_ancho_de_banda_1}) graficamos la ganancia en función del ancho de banda obtenida a partir de combinar los graficos de la Figura anterior. También mostramos el producto entre la ganancia y el ancho de banda en función de la ganancia para una señal de 200 Hz, que es constante en el op-amp ideal (!! Referencia!!).
+A continuación (Figura \ref{fig:ganancia_ancho_de_banda_1_loglog}) graficamos la ganancia en función del ancho de banda obtenida a partir de combinar los graficos de la Figura \ref{fig:ganancia_ancho_de_banda}. En el gráfico realizamos un ajuste lineal para el caso de baja frecuencia a fin de determinar el ancho de banda a ganancia unitaria, es decir la frecuencia umbral para la cual la amplitud a la entrada es igual a la salida.
+El valor hallado es de 1.387 MHz, siendo que el valor típico reportado por el fabricante es de 1.2 MHz (referencia). Cabe destacar que la limitación en el ancho de banda de la detección no nos permite obtener la curva para todo el rango, y por lo tanto el valor hallado es una estimación obtenida a partir del ajuste lineal de la curva Ganancia vs. Ancho de banda. La pendiente obtenida es de 9.29 dB/decada, comparable a los valores típicos de opamps de 10 dB/decada.
 
 \begin{figure} [H]
 \centering
-\includegraphics[scale=0.45]{ganancia_ancho_de_banda_1.png}
-\caption{ Izquierda: Ganancia en función del ancho de banda a distintas frecuencias de señal. Derecha: producto entre la ganancia y el ancho de banda en función de la ganancia para señal de 200 Hz. \label{fig:ganancia_ancho_de_banda_1}}
+\includegraphics[scale=0.45]{ganancia_ancho_de_banda_1_loglog.png}
+\caption{Ganancia en función del ancho de banda a distintas frecuencias de señal. El ajuste de la caída del ancho de banda con la ganancia para bajas frecuencias nos permite estimar el valor del ancho de banda a ganancia unitaria. La caída a 20 KHz es debido a la limitación del ancho de banda de la detección. \label{fig:ganancia_ancho_de_banda_1_loglog}}
 \end{figure} 
 
 

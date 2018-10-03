@@ -42,6 +42,8 @@ subcarpeta_salida = 'Parlante'
 amplitud_v_ch0 = np.load(os.path.join(carpeta_salida,subcarpeta_salida, 'wp_amp_ch0.npy'))
 amplitud_v_ch1 = np.load(os.path.join(carpeta_salida,subcarpeta_salida, 'wp_amp_ch1.npy'))
 parlante_levels = np.load(os.path.join(carpeta_salida,subcarpeta_salida, 'parlante_levels.npy'))
+amplitud_v_chs = np.array([amplitud_v_ch0,amplitud_v_ch1])
+
 mic_levels = [10,20,30,40,50,60,70,80,90,100]
 
 
@@ -88,7 +90,7 @@ np.save(os.path.join(carpeta_salida,subcarpeta_salida, 'data_in'),data_in1)
 #plt.plot(data_out1[0,:,0])
 #plt.plot(data_in1[0,:,0]/(2**32))
 
-#%%
+#%% Graficos
 ### Realiza la FFT de la señal enviada y adquirida
 
 carpeta_salida = 'Respuesta'
@@ -471,6 +473,23 @@ np.save(os.path.join(carpeta_salida,subcarpeta_salida, 'data_in'),data_in)
 carpeta_salida = 'Respuesta'
 subcarpeta_salida = 'Barrido'
 
+frecs_ini = [0,100,1000,18000,20000]
+frecs_fin = [100,1000,18000,20000,23000]
+pasos_rangos = [20,20,30,20,20]
+
+frecs_finales = np.array([])
+for i in range(len(pasos_rangos)):
+    
+    frec_ini = frecs_ini[i]
+    frec_fin = frecs_fin[i]
+    pasos = pasos_rangos[i]   
+    delta_frec = (frec_fin-frec_ini)/(pasos+1)
+    
+    for j in range(pasos):
+        
+        fr = frec_ini + j*delta_frec        
+        frecs_finales = np.append(frecs_finales,fr)
+
 data_out = np.load(os.path.join(carpeta_salida,subcarpeta_salida, 'data_out.npy'))
 data_in = np.load(os.path.join(carpeta_salida,subcarpeta_salida, 'data_in.npy'))
 
@@ -548,14 +567,32 @@ plt.close(fig)
 carpeta_salida = 'Respuesta'
 subcarpeta_salida = 'ComparacionChirp'
 
+# Busco ancho de banda
+comp_frec = 1000
+rango_1_frec = [2,200]
+rango_2_frec = [15000,22000]
 
+comp_ind = np.argmin(np.abs(frec_send1-comp_frec))
+rango_1_ind = [np.argmin(np.abs(frec_send1-rango_1_frec[0])),np.argmin(np.abs(frec_send1-rango_1_frec[1]))]
+rango_2_ind = [np.argmin(np.abs(frec_send1-rango_2_frec[0])),np.argmin(np.abs(frec_send1-rango_2_frec[1]))]
+
+bw_min_ind = rango_1_ind[0] + np.argmin(np.abs(fft_norm1[rango_1_ind[0]:rango_1_ind[1]] - fft_norm1[comp_ind]/2))
+bw_max_ind = rango_2_ind[0] + np.argmin(np.abs(fft_norm1[rango_2_ind[0]:rango_2_ind[1]] - fft_norm1[comp_ind]/2))
+
+bw_min = frec_send1[bw_min_ind]
+bw_max = frec_send1[bw_max_ind]
+print(bw_min)
+print(bw_max)
+
+
+###
 fig = plt.figure(dpi=250)
 ax = fig.add_axes([.15, .15, .75, .8])     
 ax.plot(frec_send1,10*np.log10(fft_norm1),'-',color='blue', label=u'Potencia por chirp',alpha=0.7,linewidth=2) # por chirp
 ax.plot(frecs_finales,10*np.log10(pot_salida_max),'o',color='red', label=u'Potencia por barrido',alpha=0.7,linewidth=2) # barrido
 
-ax.axvline(7,linestyle='--',color='red',alpha=0.7, label='Ancho de banda')
-ax.axvline(20187,linestyle='--',color='red',alpha=0.7)
+ax.axvline(bw_min,linestyle='--',color='red',alpha=0.7, label='Ancho de banda')
+ax.axvline(bw_max,linestyle='--',color='red',alpha=0.7)
 ax.set_xlim([-1000,28000])
 ax.set_ylim([-30,10])
 ax.set_xlabel('Frecuencia [Hz]')
@@ -587,8 +624,8 @@ ax = fig.add_axes([.10, .12, .37, .8])
 ax.plot(frec_send1,10*np.log10(fft_norm1),'-',color='blue', label=u'Potencia por chirp',alpha=0.7,linewidth=2) # por chirp
 ax.plot(frecs_finales,10*np.log10(pot_salida_max),'o',color='red', label=u'Potencia por barrido',alpha=0.7,linewidth=2) # barrido
 
-ax.axvline(7,linestyle='--',color='red',alpha=0.7, label='Ancho de banda')
-ax.axvline(20187,linestyle='--',color='red',alpha=0.7)
+ax.axvline(bw_min,linestyle='--',color='red',alpha=0.7, label='Ancho de banda')
+ax.axvline(bw_max,linestyle='--',color='red',alpha=0.7)
 ax.set_xlim([-1000,28000])
 ax.set_ylim([-30,10])
 ax.set_xlabel('Frecuencia [Hz]')
@@ -600,8 +637,8 @@ ax.grid(linewidth=0.5,linestyle='--')
 ax1 = fig.add_axes([.58, .12, .37, .8])
 ax1.plot(frec_send1,10*np.log10(fft_norm1),'-',color='blue', label=u'Potencia por chirp',alpha=0.7,linewidth=2) # por chirp
 ax1.plot(frecs_finales,10*np.log10(pot_salida_max),'o',color='red', label=u'Potencia por barrido',alpha=0.7,linewidth=2) # barrido
-ax1.axvline(7,linestyle='--',color='red',alpha=0.7, label='Ancho de banda')
-ax1.axvline(20187,linestyle='--',color='red',alpha=0.7)
+ax1.axvline(bw_min,linestyle='--',color='red',alpha=0.7, label='Ancho de banda')
+ax1.axvline(bw_max,linestyle='--',color='red',alpha=0.7)
 ax1.set_xlim([-20,100])
 ax1.set_ylim([-30,10])
 ax1.set_xlabel('Frecuencia [Hz]')
@@ -626,8 +663,8 @@ ax = fig.add_axes([.15, .15, .75, .8])
 ax.plot(frec_send2,10*np.log10(fft_norm2),'-',color='blue', label=u'Potencia por ruido blanco',alpha=0.7,linewidth=2) # por chirp
 ax.plot(frecs_finales,10*np.log10(pot_salida_max),'o',color='red', label=u'Potencia por barrido',alpha=0.7,linewidth=2) # barrido
 
-ax.axvline(7,linestyle='--',color='red',alpha=0.7, label='Ancho de banda')
-ax.axvline(20187,linestyle='--',color='red',alpha=0.7)
+ax.axvline(bw_min,linestyle='--',color='red',alpha=0.7, label='Ancho de banda')
+ax.axvline(bw_max,linestyle='--',color='red',alpha=0.7)
 ax.set_xlim([-1000,28000])
 ax.set_ylim([-30,10])
 ax.set_xlabel('Frecuencia [Hz]')

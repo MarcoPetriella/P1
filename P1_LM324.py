@@ -782,7 +782,7 @@ calibracion_CH0_seno = np.load(os.path.join('Calibracion',dato, 'Seno_CH0' +  '_
 calibracion_CH1_seno = np.load(os.path.join('Calibracion',dato, 'Seno_CH1'+  '_wm'+str(mic_level)+'_'+dato+'_ajuste.npy'))
 
 
-frec_comp = 1000
+frec_comp = 200
 n = 20
 
 frec_comp_bw = [200,21000]
@@ -1047,7 +1047,7 @@ ax.axvline(20000,linestyle='--',color='red',label='Ancho de banda medición')
 ax.set_ylim([0,400])     
 #ax.set_title(u'Ganancia vs Ancho de banda')
 ax.set_xlabel('Ancho de banda [Hz]')
-ax.set_ylabel('Ganancia')
+ax.set_ylabel('Ganancia Tensión')
 ax.legend(loc=1)
 ax.grid(linewidth=0.5,linestyle='--')
 
@@ -1068,9 +1068,20 @@ fig.savefig(figname, dpi=300)
 plt.close(fig)
 
 ##
+## LOGLOG Ajuste ancho de banda de ganacia unitaria
+
+ancho_de_banda_array_lim = ancho_de_banda_array[0:10]
+ganancia_array_lim = np.asarray(ganancia[0])
+ganancia_array_lim = ganancia_array_lim[0:10]
+ancho_de_banda_array_lim_log = np.log10(ancho_de_banda_array_lim)
+ganancia_array_lim_log = 10*np.log10(ganancia_array_lim)
+
+ajuste = np.polyfit(ancho_de_banda_array_lim_log, ganancia_array_lim_log, 1)
+
+ancho_de_banda_array_aj = np.array([1000,1.0e7])
 
 fig = plt.figure(dpi=250)
-ax = fig.add_axes([.10, .15, .35, .8])
+ax = fig.add_axes([.12, .15, .75, .8])
 j = 0
 
 #ax.semilogx(ancho_de_banda_array,-20*np.log(ancho_de_banda_array),'--',color='red',label='20 db/decada')
@@ -1079,97 +1090,33 @@ for j in range(len(frec_comp_ganancia)):
     ganancia_array = np.asarray(ganancia[j])
     ax.semilogx(ancho_de_banda_array,10*np.log10(ganancia_array),'o',color=cmap(float(j)/len(frec_comp_ganancia)),label=str(frec_comp_ganancia[j]) + ' Hz',markersize=10)
 
-ax.semilogx(ancho_de_banda_array,60.5-10*np.log10(ancho_de_banda_array),'--',color='red',label='10 db/decada')
-ax.axvline(20000,linestyle='--',color='red',label='Ancho de banda medición')   
-ax.set_ylim([0,20])    
+ax.semilogx(np.array([1e6,2e6]),np.array([0,0]),'--',color='black',alpha=0.5)
+ax.semilogx(np.array([10**(-ajuste[1]/ajuste[0]),10**(-ajuste[1]/ajuste[0])]),np.array([-2,2]),'--',color='black',alpha=0.5)
+ax.semilogx(ancho_de_banda_array_aj,ajuste[1]+ajuste[0]*np.log10(ancho_de_banda_array_aj),'--',color='red',label='Ajuste 200 Hz')
+
+ax.set_ylim([-10,30])    
+ax.set_xlim([1000,1e7])  
+ax.annotate('Ancho de banda \nde ganancia unitaria:' + '{:6.3f}'.format(10**(-ajuste[1]/ajuste[0])/1000000) + ' MHz', xy=(10**(-ajuste[1]/ajuste[0])-100000,-0.5), xytext=(10**(-ajuste[1]/ajuste[0])-1350000,-8),arrowprops=dict(arrowstyle="->"))
+  
+#ax.arrow(10**(-ajuste[1]/ajuste[0])-100000,-0.5,-1000000,-5,'->',color='red',alpha=0.7)
+#ax.text(10**(-ajuste[1]/ajuste[0])-1350000,-7,'Ancho de banda de ganancia unitaria')
+#ax.text(10**(-ajuste[1]/ajuste[0])-1350000,-8.5,'{:6.3f}'.format(10**(-ajuste[1]/ajuste[0])/1000000) + ' MHz')
+
+
+ax.text(0.4,0.9,'Ajuste: ax + b', transform=ax.transAxes)
+ax.text(0.4,0.85,'a: ' '{:6.2f}'.format(ajuste[0])+ ' dB/decada', transform=ax.transAxes)
+ax.text(0.4,0.80,'b: ' '{:6.2f}'.format(ajuste[1])+ ' dB', transform=ax.transAxes)
  
 #ax.set_title(u'Ganancia vs Ancho de banda')
 ax.set_xlabel('Ancho de banda [Hz]')
-ax.set_ylabel('Ganancia Tensión')
+ax.set_ylabel('Ganancia Tensión [dB]')
 ax.legend(loc=1)
 ax.grid(linewidth=0.5,linestyle='--')
-
-j = 0
-ganancia_array = np.asarray(ganancia[j])
-ax1 = fig.add_axes([.60, .15, .35, .8])
-ax1.plot(ganancia_array,ganancia_array*ancho_de_banda_array/1000000,'o',color=cmap(float(j)/len(frec_comp_ganancia)),markersize=10,label=str(frec_comp_ganancia[j]) + ' Hz')
-ax1.axvline(50,linestyle='--',color='red',label='Ancho de banda medición')
-ax1.set_xlim([0,400])     
-#ax1.set_title(u'Ganancia*BW vs Ganancia')
-ax1.set_xlabel('Ganancia Tensión')
-ax1.set_ylabel('Ganancia*Ancho de banda [MHz]')
-ax1.legend(loc=1)
-ax1.grid(linewidth=0.5,linestyle='--')
 
 figname = os.path.join(carpeta_salida,subcarpeta_salida,subsubcarpeta_salida, 'ganancia_ancho_de_banda_1_loglog.png')
 fig.savefig(figname, dpi=300)  
 plt.close(fig)
 
 
-
-
-
-
-#%% Figuras respuesta RUIDO
-
-carpeta_salida = 'LM324'
-subcarpeta_salida = 'Amplificador'
-subsubcarpeta_salida = 'Respuesta_-5V'
-
-R2 = 100000
-R1s = [330,386,464,558,667,775,994,1200,1316,1451,1545,1760,2170,3210,4700,6560,8080,9700,14070,20070,29100,48100,62000,100000]
-
-dato = 'int16'    
-fs = 44100*8  
-par_level = 100
-ind_nivel = par2ind(par_level,parlante_levels)
-mic_level = 50
-
-calibracion_CH0_seno = np.load(os.path.join('Calibracion',dato, 'Seno_CH0' +  '_wm'+str(mic_level)+'_'+dato+'_ajuste.npy'))
-calibracion_CH1_seno = np.load(os.path.join('Calibracion',dato, 'Seno_CH1'+  '_wm'+str(mic_level)+'_'+dato+'_ajuste.npy'))
-
-
-delay = 0.2
-med = 0.5
-
-std_ruido_input = np.array([])
-std_ruido_output = np.array([])
-
-
-for i in range(len(R1s)):
-    
-    
-    R1 = R1s[i]
-    print(R1)
-
-    data_out1 = np.load(os.path.join(carpeta_salida,subcarpeta_salida,subsubcarpeta_salida, 'data_out_R2_'+str(R2)+'_R1_'+str(R1)+'.npy'))
-    data_in1 = np.load(os.path.join(carpeta_salida,subcarpeta_salida,subsubcarpeta_salida, 'data_in_R2_'+str(R2)+'_R1_'+str(R1)+'.npy'))
-    
-    
-    # Calibracion de los canales
-    data_in1[:,:,0] = (data_in1[:,:,0]-calibracion_CH0_seno[1]*2**16)/(calibracion_CH0_seno[0]*2**16)
-    data_in1[:,:,1] = (data_in1[:,:,1]-calibracion_CH1_seno[1]*2**16)/(calibracion_CH1_seno[0]*2**16)
-        
-    
-    ruido_ch0 =data_in1[0,int(fs*delay):int(fs*delay)+int(fs*med),0]
-    ruido_ch1 =data_in1[0,int(fs*delay):int(fs*delay)+int(fs*med),1]
-    
-    std_ruido_input = np.append(std_ruido_input,np.std(ruido_ch0))
-    std_ruido_output = np.append(std_ruido_output,np.std(ruido_ch1))
-
-
-plt.plot(std_ruido_input,'o')
-plt.plot(std_ruido_output,'o')
-
-
-R1s_array = np.asarray(R1s)
-ancho_de_banda_array = np.asarray(ancho_de_banda)
-
-plt.plot(std_ruido_input,'o')
-plt.plot(R2/R1s_array,std_ruido_output/std_ruido_input,'o')
-
-
-
-#%% SNR y FIGURE NOISE
 
 
