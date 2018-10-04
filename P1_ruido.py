@@ -26,6 +26,8 @@ from P1_funciones import play_rec
 from P1_funciones import signalgen
 from P1_funciones import sincroniza_con_trigger
 from P1_funciones import par2ind
+from P1_funciones import fft_power_density
+
 
 params = {'legend.fontsize': 14,
           'figure.figsize': (14, 9),
@@ -327,21 +329,13 @@ for i,mic_level in enumerate(mic_levels):
     std_ch1_v = np.append(std_ch1_v,np.std(data_in_cal_med[:,1]))
 
 
-
     # Espectro
     data_in = data_in_cal
     data_in = data_in[:,int(fs*delay):int(fs*(delay+med)),:]
+       
+    frec_acq,fft_acq_ch0 = fft_power_density(data_in[0,:,0],fs)
+    frec_acq,fft_acq_ch1 = fft_power_density(data_in[0,:,1],fs)    
     
-    fft_acq_ch0 = abs(fft.fft(data_in[0,:,0]))**2/int(data_in.shape[1]/2+1)/fs
-    fft_acq_ch0 = fft_acq_ch0[0:int(data_in.shape[1]/2+1)]
-    fft_acq_ch0[1:] = 2*fft_acq_ch0[1:]
-    
-    fft_acq_ch1 = abs(fft.fft(data_in[0,:,1]))**2/int(data_in.shape[1]/2+1)/fs
-    fft_acq_ch1 = fft_acq_ch1[0:int(data_in.shape[1]/2+1)]
-    fft_acq_ch1[1:] = 2*fft_acq_ch1[1:]
-    
-    frec_acq = np.linspace(0,int(data_in.shape[1]/2-1),int(data_in.shape[1]/2+1))
-    frec_acq = frec_acq*(fs/2)/int(data_in.shape[1]/2+1)  
 
     # Busco frecuencia de testeo
     frec_comparacion = [1020,1025]
@@ -469,17 +463,9 @@ for i,mic_level in enumerate(mic_levels):
     
     
     data_in = data_in[:,int(fs*delay):int(fs*(delay+med)),:]
-    
-    fft_acq_ch0 = abs(fft.fft(data_in[0,:,0]))**2/int(data_in.shape[1]/2+1)/fs
-    fft_acq_ch0 = fft_acq_ch0[0:int(data_in.shape[1]/2+1)]
-    fft_acq_ch0[1:] = 2*fft_acq_ch0[1:]
-    
-    fft_acq_ch1 = abs(fft.fft(data_in[0,:,1]))**2/int(data_in.shape[1]/2+1)/fs
-    fft_acq_ch1 = fft_acq_ch1[0:int(data_in.shape[1]/2+1)]
-    fft_acq_ch1[1:] = 2*fft_acq_ch1[1:]
-    
-    frec_acq = np.linspace(0,int(data_in.shape[1]/2-1),int(data_in.shape[1]/2+1))
-    frec_acq = frec_acq*(fs/2)/int(data_in.shape[1]/2+1)    
+        
+    frec_acq,fft_acq_ch0 = fft_power_density(data_in[0,:,0],fs)
+    frec_acq,fft_acq_ch1 = fft_power_density(data_in[0,:,1],fs)       
 
     # Busco frecuencia de testeo
     frec_comparacion = [1020,1025]
@@ -654,16 +640,8 @@ for i in range(0,len(factor),2):
     std_ch0 = np.append(std_ch0,np.std(data_in[0,:,0]))
     std_ch1 = np.append(std_ch1,np.std(data_in[0,:,1]))
     
-    fft_acq_ch0 = abs(fft.fft(data_in[0,:,0]))**2/int(data_in.shape[1]/2+1)/fs
-    fft_acq_ch0 = fft_acq_ch0[0:int(data_in.shape[1]/2+1)]
-    fft_acq_ch0[1:] = 2*fft_acq_ch0[1:]
-    
-    fft_acq_ch1 = abs(fft.fft(data_in[0,:,1]))**2/int(data_in.shape[1]/2+1)/fs
-    fft_acq_ch1 = fft_acq_ch1[0:int(data_in.shape[1]/2+1)]
-    fft_acq_ch1[1:] = 2*fft_acq_ch1[1:]
-    
-    frec_acq = np.linspace(0,int(data_in.shape[1]/2),int(data_in.shape[1]/2+1))
-    frec_acq = frec_acq*(fs/2+1)/int(data_in.shape[1]/2+1)  
+    frec_acq,fft_acq_ch0 = fft_power_density(data_in[0,:,0],fs)
+    frec_acq,fft_acq_ch1 = fft_power_density(data_in[0,:,1],fs)       
 
     ax.loglog(frec_acq,fft_acq_ch1,color=cmap(float(i)/len(factor)),alpha=1/(i+1),label='Frec: ' + '{:6.2f}'.format(fs/1000) + ' kHz')
 

@@ -561,5 +561,13 @@ def par2ind(par_level,parlante_levels):
         
     return i
     
+
+def fft_power_density(data_vec,fs):
     
+    psdx = abs(fft.fft(data_vec))**2/int(data_vec.shape[0])/fs
+    psdx = psdx[0:int(data_vec.shape[0]/2)]
+    psdx[1:] = 2*psdx[1:]
     
+    freq = np.arange(0,fs/2,fs/data_vec.shape[0])
+    
+    return freq, psdx
