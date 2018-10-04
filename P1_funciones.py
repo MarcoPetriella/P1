@@ -568,6 +568,7 @@ def fft_power_density(data_vec,fs):
     psdx = psdx[0:int(data_vec.shape[0]/2)]
     psdx[1:] = 2*psdx[1:]
     
-    freq = np.arange(0,fs/2,fs/data_vec.shape[0])
+    freq = np.fft.fftfreq(data_vec.shape[0], d=1/fs)
+    freq = freq[0:int(data_vec.shape[0]/2)]
     
     return freq, psdx

@@ -587,13 +587,13 @@ mic_level = 70
 
 carpeta_salida = 'Ruido'
 subcarpeta_salida = 'Frecuencia'
+dato = 'int16'  
 
 calibracion_CH0_seno = np.load(os.path.join('Calibracion','int16', 'Seno_CH0'+  '_wm'+str(mic_level)+'_'+dato+'_ajuste.npy'))
 calibracion_CH1_seno = np.load(os.path.join('Calibracion','int16', 'Seno_CH1'+   '_wm'+str(mic_level)+'_'+dato+'_ajuste.npy'))
 
 
-
-dato = 'int16'    
+  
 fs_base = 44100  
 duracion_trigger = 0.5
 duracion_ruido = 5
