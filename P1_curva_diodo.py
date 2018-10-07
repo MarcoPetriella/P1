@@ -1011,7 +1011,7 @@ ax.text(0.1,0.70,'b: ' '{:6.2f}'.format(ajuste_lineal_cre[1]) + ' [K]', transfor
 ax.grid(linestyle='--')
 ax.legend()
 ax.set_xlabel('Temperatura [K]')
-ax.set_ylabel('V_t*Q/K [K]')
+ax.set_ylabel('$V_T*q/K$ [K]')
 #ax.set_title('Factor idealidad con flanco creciente')
 figname = os.path.join(carpeta_salida,subcarpeta_salida,subsubcarpeta_salida,subsubsubcarpeta_salida, 'factor_linealidad_creciente.png')
 fig.savefig(figname, dpi=300)  
