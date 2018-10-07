@@ -104,19 +104,8 @@ def signalgen_corrected(type,fr,amp,duration,fs,frec_fft,power_fft,frec_range):
     fs: float, sampling rate in Hz
     output: array, signal generated
     """
-    # output=np.array[()]
-    if type == 'sine':
-        output = amp*np.sin(2.*np.pi*np.arange(int(duration*fs))*fr/fs)
-    elif type == 'square':
-        output = amp*signal.square(2.*np.pi*np.arange(int(duration*fs))*fr/fs)
-    elif type == 'ramp':
-        output = amp*signal.sawtooth(2*np.pi*np.arange(int(duration*fs))*fr/fs, width=0.5).astype(np.float32)                 
-    elif type == 'constant':
-        output = np.full(len(input),amp)
-    else:
-        print ('wrong signal type')
-        output = 0
-        return output
+    
+    output = signalgen(type,fr,amp,duration,fs)
     
     # Corrección por respuesta del emisor receptor
     power_fft = np.append(power_fft,power_fft[:0:-1])
