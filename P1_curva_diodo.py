@@ -744,6 +744,13 @@ carpeta_salida = 'CurvaDiodo'
 subcarpeta_salida = 'Temperatura'
 subsubcarpeta_salida = diodo
 subsubsubcarpeta_salida = str(int(frec_ini))
+dato = 'int16'    
+par_level = 100
+ind_nivel = par2ind(par_level,parlante_levels)
+mic_level = 70
+fs = 44100*8  
+
+
 
 
 array_setpoint_teo = np.load(os.path.join(carpeta_salida,subcarpeta_salida,subsubcarpeta_salida,subsubsubcarpeta_salida, 'array_setpoint_teo.npy'))
@@ -1011,7 +1018,7 @@ ax.text(0.1,0.70,'b: ' '{:6.2f}'.format(ajuste_lineal_cre[1]) + ' [K]', transfor
 ax.grid(linestyle='--')
 ax.legend()
 ax.set_xlabel('Temperatura [K]')
-ax.set_ylabel('$V_T*q/K$ [K]')
+ax.set_ylabel('$V_T$*q/K [K]')
 #ax.set_title('Factor idealidad con flanco creciente')
 figname = os.path.join(carpeta_salida,subcarpeta_salida,subsubcarpeta_salida,subsubsubcarpeta_salida, 'factor_linealidad_creciente.png')
 fig.savefig(figname, dpi=300)  
@@ -1030,7 +1037,7 @@ ax.text(0.1,0.70,'b: ' '{:6.2f}'.format(ajuste_lineal_dec[1]) + ' [K]', transfor
 ax.grid(linestyle='--')
 ax.legend()
 ax.set_xlabel('Temperatura [K]')
-ax.set_ylabel('V_t*Q/K [K]')
+ax.set_ylabel('$V_T$*q/K [K]')
 #ax.set_title('Factor idealidad con flanco decreciente')
 figname = os.path.join(carpeta_salida,subcarpeta_salida,subsubcarpeta_salida,subsubsubcarpeta_salida, 'factor_linealidad_decreciente.png')
 fig.savefig(figname, dpi=300)  

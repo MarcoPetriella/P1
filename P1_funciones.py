@@ -345,6 +345,220 @@ def play_rec(fs,input_channels,data_out,corrige_retardos,offset_correlacion=0,st
  
 
 
+
+
+def play_rec_continuo(fs):
+    
+    
+    """
+    Descripción:
+    ------------
+    Esta función permite utilizar la placa de audio de la pc como un generador de funciones / osciloscopio
+    con dos canales de entrada y dos de salida. Para ello utiliza la libreria pyaudio y las opciones de write() y read()
+    para escribir y leer los buffer de escritura y lectura. Para realizar el envio y adquisición simultánea de señales, utiliza
+    un esquema de tipo productor-consumidor que se ejecutan en thread o hilos diferenntes. Para realizar la comunicación 
+    entre threads y evitar overrun o sobreescritura de los datos del buffer de lectura se utilizan dos variables de tipo block.
+    El block1 se activa desde proceso productor y avisa al consumidor que el envio de la señal ha comenzado y que por lo tanto 
+    puede iniciar la adquisición. 
+    El block2 se activa desde el proceso consumidor y aviso al productor que la lesctura de los datos ha finalizado y por lo tanto
+    puede comenzar un nuevo paso del barrido. 
+    Teniendo en cuenta que existe un retardo entre la señal enviada y adquirida, y que existe variabilidad en el retardo; se puede
+    utilizar el canal 0 de entrada y salida para el envio y adquisicón de una señal de disparo que permita sincronizar las mediciones.
+    Notar que cuando se pone output_channel = 1, en la segunda salida pone la misma señal que en el channel 1 de salida.
+    
+    Parámetros:
+    -----------
+    
+    fs : int, frecuencia de sampleo de la placa de audio. Valor máximo 44100*8 Hz. [Hz]
+    input_channels : int, cantidad de canales de entrada.
+    data_out : numpy array dtype=np.float32, array de tres dimensiones de la señal a enviar [cantidad_de_pasos][muestras_por_paso][output_channels]
+    corrige_retardos = {'si','no'}, corrige el retardo utilizando la función sincroniza_con_trigger
+    offset_correlacion: int, muestra (tiempo) del trigger a partir de cual se hace la correlacion
+    steps_correlacion: int, muestras (tiempo) del trigger con el cual se hace la correlacion
+    
+    Salida (returns):
+    -----------------
+    data_in: numpy array, array de tamaño [cantidad_de_pasos][muestras_por_pasos_input][input_channels]
+    retardos: numpy_array, array de tamaño [cantidad_de_pasos] con los retardos entre trigger enviado y adquirido
+    
+    Las muestras_por_pasos está determinada por los tiempos de duración de la señal enviada y adquirida. El tiempo entre 
+    muestras es 1/fs.
+    
+    Ejemplo:
+    --------
+    
+    fs = 44100
+    input_channels = 2
+    data_out = np.array([[][]])   
+    corrige_retardos = 'si'
+    
+    data_in, retardos = play_rec(parametros)
+   
+    Autores: Marco Petriella    
+    """  
+    
+  
+    # Tipo de dato
+    dato_np = np.int16
+    dato_pyaudio = pyaudio.paInt16   
+    
+    frames_per_input_buffer = 2*256
+    frames_per_output_buffer = 2*256
+    
+    chunks_input_buffer1 = 10
+    chunks_input_buffer = 1000
+    chunks_output_buffer = 1000
+    
+    
+    output_channels = 1
+    input_channels = 1
+    
+    # Inicia pyaudio
+    p = pyaudio.PyAudio()
+              
+    # Defino el stream del parlante
+    stream_output = p.open(format=pyaudio.paFloat32,
+                    channels = output_channels,
+                    rate = fs,
+                    output = True,                  
+    )    
+    
+    # Defino el stream del microfono
+    stream_input = p.open(format = dato_pyaudio,
+                    channels = input_channels,
+                    rate = fs,
+                    input = True,
+                    frames_per_buffer = frames_per_input_buffer,
+    )
+    
+    
+    # Defino buffers
+    input_buffer = np.zeros([chunks_input_buffer,frames_per_input_buffer],dtype=dato_np)
+    output_buffer = np.zeros([chunks_output_buffer,frames_per_input_buffer*4],dtype=np.float32)
+    
+    data_i = []
+    for i in range(chunks_input_buffer1):
+        stream_input.start_stream()
+        data_i.append(stream_input.read(frames_per_input_buffer))
+        stream_input.stop_stream()           
+    
+    semaphore1 = threading.Semaphore(0)
+    semaphore2 = threading.Semaphore(0)
+           
+    # Defino el thread que envia la señal          
+    def producer():  
+        i = 0
+        while producer_exit[0] is False:
+            
+            print('escritura:',semaphore2._value)                          
+            if semaphore2._value > chunks_input_buffer:
+                print('Hay overun en la escritura! \n')
+            
+            semaphore2.acquire()
+            
+            #stream_output.start_stream()
+            stream_output.write(output_buffer[i,:])
+            #stream_output.stop_stream()     
+            
+            i = i+1
+            i = i%chunks_output_buffer     
+    
+        producer_exit[0] = True  
+            
+
+    # Defino el thread que adquiere la señal   
+    def consumer():
+        i = 0
+        while consumer_exit[0] is False:
+            
+            #stream_input.start_stream()
+            data_i[i] = stream_input.read(frames_per_input_buffer)  
+            #stream_input.stop_stream()   
+            i = i+1
+            i = i%chunks_input_buffer1
+            
+            semaphore1.release()
+                
+        consumer_exit[0] = True  
+
+    # Defino el thread que adquiere la señal   
+    def consumer1():
+        i = 0
+        j = 0
+        while consumer_exit1[0] is False:
+            
+            if semaphore1._value > chunks_input_buffer1:
+                print('Hay overun en la lectura! \n')
+                
+            semaphore1.acquire()    
+            print('lectura:',semaphore1._value)   
+            data_ii = -np.frombuffer(data_i[j], dtype=dato_np) 
+            input_buffer[i,:] = data_ii
+            
+            j = j+1
+            j = j%chunks_input_buffer1          
+            
+            output_buffer[i,0:frames_per_input_buffer] = 0.1*np.sin(2.*np.pi*np.arange(frames_per_output_buffer)*(1000+i*10)/fs)
+            
+            i = i+1
+            i = i%chunks_input_buffer   
+            
+            semaphore2.release()
+                
+        consumer_exit1[0] = True  
+        
+        
+           
+    # Variables de salida de los threads
+    producer_exit = [False]   
+    consumer_exit = [False] 
+    consumer_exit1 = [False] 
+            
+    # Inicio los threads    
+    print (u'\n Inicio barrido \n Presione Ctrl + c para interrumpir.')
+    t1 = threading.Thread(target=producer, args=[])
+    t2 = threading.Thread(target=consumer, args=[])
+    t3 = threading.Thread(target=consumer1, args=[])
+    
+    stream_input.start_stream()
+    stream_output.start_stream()
+    
+    t1.start()
+    t2.start()
+    t3.start()
+    
+    # Salida de la medición       
+    while not producer_exit[0] or not consumer_exit[0]:
+        try: 
+            time.sleep(0.2)
+        except KeyboardInterrupt:
+            consumer_exit[0] = True  
+            consumer_exit1[0] = True  
+            producer_exit[0] = True  
+            time.sleep(0.2)
+            print ('\n \n Medición interrumpida \n')
+
+
+    # Finalizo los puertos 
+    while stream_input.is_active():
+        stream_input.stop_stream()  
+        time.sleep(0.2)
+
+    # Finalizo los puertos 
+    while stream_output.is_active():
+        stream_output.stop_stream()   
+        time.sleep(0.2)        
+    
+    stream_input.close()
+    stream_output.close()
+    p.terminate()   
+        
+    return input_buffer, output_buffer
+
+
+
+
+
 def completa_con_ceros(data_out,new_size1,mode='forward'):
     
     
