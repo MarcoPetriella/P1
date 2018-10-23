@@ -347,7 +347,7 @@ def play_rec(fs,input_channels,data_out,corrige_retardos,offset_correlacion=0,st
 
 
 
-def play_rec_continuo(fs,frames_per_buffer,chunks_buffer,callback,**kargs):
+def play_rec_continuo(fs,frames_per_buffer,chunks_buffer,callback,callback_variables):
     
     
     """
@@ -496,7 +496,7 @@ def play_rec_continuo(fs,frames_per_buffer,chunks_buffer,callback,**kargs):
             j = j%chunks_input_buffer1          
             
             # Aca va el callback
-            output_buffer_i = callback(input_buffer,output_buffer,i,frames_per_buffer)
+            output_buffer_i = callback(callback_variables,input_buffer,output_buffer,i,frames_per_buffer,chunks_buffer,fs)
             output_buffer[i,0:frames_per_buffer] = output_buffer_i
             semaphore2.release()
             

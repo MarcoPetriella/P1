@@ -26,20 +26,23 @@ fs = 44100
 frames_per_buffer = 4*256
 chunks_buffer = 1000
 
-kargs = {'frames_per_buffer':frames_per_buffer}
 
-def callback(*args):
+callback_variables = []
+
+def callback(callback_variables,*args):
     
     input_buffer = args[0]
     output_buffer = args[1]
     i = args[2]
     frames_per_buffer = args[3]
+    chunks_buffer = args[4]
+    fs = args[5]
     
-    output_buffer_i = 0.1*np.sin(2.*np.pi*np.arange(frames_per_buffer)*1000/fs)
+    output_buffer_i = 0.1*np.sin(2.*np.pi*np.arange(i*frames_per_buffer,(i+1)*frames_per_buffer)*1000/fs)
     
     return output_buffer_i
 
-input_buffer, output_buffer = play_rec_continuo(fs,frames_per_buffer,chunks_buffer,callback)
+input_buffer, output_buffer = play_rec_continuo(fs,frames_per_buffer,chunks_buffer,callback,callback_variables)
 
 
 #%%
