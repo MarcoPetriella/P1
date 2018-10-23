@@ -23,18 +23,41 @@ from P1_funciones import play_rec_continuo
 
 #%%
 fs = 44100
+frames_per_buffer = 4*256
+chunks_buffer = 1000
 
-input_buffer, output_buffer = play_rec_continuo(fs)
+kargs = {'frames_per_buffer':frames_per_buffer}
+
+def callback(*args):
+    
+    input_buffer = args[0]
+    output_buffer = args[1]
+    i = args[2]
+    frames_per_buffer = args[3]
+    
+    output_buffer_i = 0.1*np.sin(2.*np.pi*np.arange(frames_per_buffer)*1000/fs)
+    
+    return output_buffer_i
+
+input_buffer, output_buffer = play_rec_continuo(fs,frames_per_buffer,chunks_buffer,callback)
 
 
 #%%
 todo = np.reshape(input_buffer,input_buffer.shape[0]*input_buffer.shape[1])
+senal =  0.1*np.sin(2.*np.pi*np.arange(256*2*1000)*(1000)/fs)
 
-plt.plot(input_buffer[1,:])
+todo = todo/todo.max()
+senal = senal/senal.max()
 
-plt.plot(todo)
-for i in range(input_buffer.shape[0]):
-    plt.axvline(i*input_buffer.shape[1],linestyle='--',color='red')
+plt.plot(todo,alpha=0.5)
+plt.plot(senal,alpha=0.5)
+
+
+plt.plot(todo-senal)
+
+
+#for i in range(input_buffer.shape[0]):
+#    plt.axvline(i*input_buffer.shape[1],linestyle='--',color='red')
 
 
 #%%

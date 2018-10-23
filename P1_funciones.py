@@ -347,7 +347,7 @@ def play_rec(fs,input_channels,data_out,corrige_retardos,offset_correlacion=0,st
 
 
 
-def play_rec_continuo(fs):
+def play_rec_continuo(fs,frames_per_buffer,chunks_buffer,callback,**kargs):
     
     
     """
@@ -402,12 +402,12 @@ def play_rec_continuo(fs):
     dato_np = np.int16
     dato_pyaudio = pyaudio.paInt16   
     
-    frames_per_input_buffer = 2*256
-    frames_per_output_buffer = 2*256
+    frames_per_input_buffer = frames_per_buffer
+    frames_per_output_buffer = frames_per_buffer
     
     chunks_input_buffer1 = 10
-    chunks_input_buffer = 1000
-    chunks_output_buffer = 1000
+    chunks_input_buffer = chunks_buffer
+    chunks_output_buffer = chunks_buffer
     
     
     output_channels = 1
@@ -432,33 +432,28 @@ def play_rec_continuo(fs):
     )
     
     
-    # Defino buffers
+    # Defino los buffers
     input_buffer = np.zeros([chunks_input_buffer,frames_per_input_buffer],dtype=dato_np)
     output_buffer = np.zeros([chunks_output_buffer,frames_per_input_buffer*4],dtype=np.float32)
     
+    # BUffer de adquisición
     data_i = []
     for i in range(chunks_input_buffer1):
         stream_input.start_stream()
         data_i.append(stream_input.read(frames_per_input_buffer))
         stream_input.stop_stream()           
     
+    # Semaforos
     semaphore1 = threading.Semaphore(0)
     semaphore2 = threading.Semaphore(0)
-           
+               
     # Defino el thread que envia la señal          
     def producer():  
         i = 0
         while producer_exit[0] is False:
             
-            print('escritura:',semaphore2._value)                          
-            if semaphore2._value > chunks_input_buffer:
-                print('Hay overun en la escritura! \n')
-            
-            semaphore2.acquire()
-            
-            #stream_output.start_stream()
+            semaphore2.acquire()            
             stream_output.write(output_buffer[i,:])
-            #stream_output.stop_stream()     
             
             i = i+1
             i = i%chunks_output_buffer     
@@ -471,9 +466,8 @@ def play_rec_continuo(fs):
         i = 0
         while consumer_exit[0] is False:
             
-            #stream_input.start_stream()
             data_i[i] = stream_input.read(frames_per_input_buffer)  
-            #stream_input.stop_stream()   
+
             i = i+1
             i = i%chunks_input_buffer1
             
@@ -489,21 +483,25 @@ def play_rec_continuo(fs):
             
             if semaphore1._value > chunks_input_buffer1:
                 print('Hay overun en la lectura! \n')
+
+            if semaphore2._value > chunks_input_buffer:
+                print('Hay overun en la escritura! \n')
                 
             semaphore1.acquire()    
-            print('lectura:',semaphore1._value)   
+
             data_ii = -np.frombuffer(data_i[j], dtype=dato_np) 
             input_buffer[i,:] = data_ii
             
             j = j+1
             j = j%chunks_input_buffer1          
             
-            output_buffer[i,0:frames_per_input_buffer] = 0.1*np.sin(2.*np.pi*np.arange(frames_per_output_buffer)*(1000+i*10)/fs)
+            # Aca va el callback
+            output_buffer_i = callback(input_buffer,output_buffer,i,frames_per_buffer)
+            output_buffer[i,0:frames_per_buffer] = output_buffer_i
+            semaphore2.release()
             
             i = i+1
             i = i%chunks_input_buffer   
-            
-            semaphore2.release()
                 
         consumer_exit1[0] = True  
         
@@ -528,7 +526,7 @@ def play_rec_continuo(fs):
     t3.start()
     
     # Salida de la medición       
-    while not producer_exit[0] or not consumer_exit[0]:
+    while not producer_exit[0] or not consumer_exit[0] or not consumer_exit1[0]:
         try: 
             time.sleep(0.2)
         except KeyboardInterrupt:
