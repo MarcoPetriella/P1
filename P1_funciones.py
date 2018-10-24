@@ -550,6 +550,7 @@ def completa_con_ceros(data_out,new_size1,mode='forward'):
     return data_out_corrected
 
 
+
 def sincroniza_con_trigger(trigger,data_in,offset_correlacion=0,steps_correlacion=0, ch=0):
     
     """
