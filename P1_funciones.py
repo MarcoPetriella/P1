@@ -353,46 +353,21 @@ def play_rec_continuo(fs,frames_per_buffer,chunks_buffer,callback,callback_varia
     """
     Descripción:
     ------------
-    Esta función permite utilizar la placa de audio de la pc como un generador de funciones / osciloscopio
-    con dos canales de entrada y dos de salida. Para ello utiliza la libreria pyaudio y las opciones de write() y read()
-    para escribir y leer los buffer de escritura y lectura. Para realizar el envio y adquisición simultánea de señales, utiliza
-    un esquema de tipo productor-consumidor que se ejecutan en thread o hilos diferenntes. Para realizar la comunicación 
-    entre threads y evitar overrun o sobreescritura de los datos del buffer de lectura se utilizan dos variables de tipo block.
-    El block1 se activa desde proceso productor y avisa al consumidor que el envio de la señal ha comenzado y que por lo tanto 
-    puede iniciar la adquisición. 
-    El block2 se activa desde el proceso consumidor y aviso al productor que la lesctura de los datos ha finalizado y por lo tanto
-    puede comenzar un nuevo paso del barrido. 
-    Teniendo en cuenta que existe un retardo entre la señal enviada y adquirida, y que existe variabilidad en el retardo; se puede
-    utilizar el canal 0 de entrada y salida para el envio y adquisicón de una señal de disparo que permita sincronizar las mediciones.
-    Notar que cuando se pone output_channel = 1, en la segunda salida pone la misma señal que en el channel 1 de salida.
+
     
     Parámetros:
     -----------
     
-    fs : int, frecuencia de sampleo de la placa de audio. Valor máximo 44100*8 Hz. [Hz]
-    input_channels : int, cantidad de canales de entrada.
-    data_out : numpy array dtype=np.float32, array de tres dimensiones de la señal a enviar [cantidad_de_pasos][muestras_por_paso][output_channels]
-    corrige_retardos = {'si','no'}, corrige el retardo utilizando la función sincroniza_con_trigger
-    offset_correlacion: int, muestra (tiempo) del trigger a partir de cual se hace la correlacion
-    steps_correlacion: int, muestras (tiempo) del trigger con el cual se hace la correlacion
+
     
     Salida (returns):
     -----------------
-    data_in: numpy array, array de tamaño [cantidad_de_pasos][muestras_por_pasos_input][input_channels]
-    retardos: numpy_array, array de tamaño [cantidad_de_pasos] con los retardos entre trigger enviado y adquirido
-    
-    Las muestras_por_pasos está determinada por los tiempos de duración de la señal enviada y adquirida. El tiempo entre 
-    muestras es 1/fs.
+
     
     Ejemplo:
     --------
     
-    fs = 44100
-    input_channels = 2
-    data_out = np.array([[][]])   
-    corrige_retardos = 'si'
-    
-    data_in, retardos = play_rec(parametros)
+
    
     Autores: Marco Petriella    
     """  
@@ -496,7 +471,7 @@ def play_rec_continuo(fs,frames_per_buffer,chunks_buffer,callback,callback_varia
             j = j%chunks_input_buffer1          
             
             # Aca va el callback
-            output_buffer_i = callback(callback_variables,input_buffer,output_buffer,i,frames_per_buffer,chunks_buffer,fs)
+            output_buffer_i = callback(callback_variables,input_buffer,output_buffer,i,frames_per_buffer,chunks_buffer,fs)            
             output_buffer[i,0:frames_per_buffer] = output_buffer_i
             semaphore2.release()
             
