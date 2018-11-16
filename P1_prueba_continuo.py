@@ -22,9 +22,9 @@ cmap = cm.get_cmap('jet')
 from P1_funciones import play_rec_continuo
 
 #%%
-fs = 44100
+fs = 44100*2
 frames_per_buffer = 4*256
-chunks_buffer = 1000
+chunks_buffer = 5000
 
 
 callback_variables = []
@@ -45,6 +45,116 @@ def callback(callback_variables,*args):
 
 
 input_buffer, output_buffer = play_rec_continuo(fs,frames_per_buffer,chunks_buffer,callback,callback_variables)
+
+
+
+input_buffer_vec = np.reshape(input_buffer,input_buffer.shape[0]*input_buffer.shape[1])
+plt.plot(input_buffer_vec)
+
+
+##################
+fs = 44100*2
+output_channels = 1
+p = pyaudio.PyAudio()
+
+stream_output = p.open(format=pyaudio.paFloat32,
+                channels = output_channels,
+                rate = fs,
+                output = True,                  
+)  
+
+
+output_buffer = input_buffer
+output_buffer = output_buffer.astype(np.float32)/np.max(output_buffer)/10
+output_buffer_vec = np.reshape(output_buffer,output_buffer.shape[0]*output_buffer.shape[1])
+plt.plot(output_buffer_vec)
+
+
+stream_output.start_stream()
+i = 0
+while i < output_buffer.shape[0]:
+    
+    stream_output.write(output_buffer[i,:])
+    
+    i = i+1
+
+stream_output.stop_stream() 
+stream_output.close()
+p.terminate()   
+
+
+############################
+import wave
+import struct
+import array
+from scipy.io import wavfile
+fs, data = wavfile.read('Pink - Floyd.wav')
+
+
+chunk = 1024
+filas = 5000
+output_channels = 1
+output_buffer = np.zeros([filas,chunk],dtype=np.float32)
+
+for i in range(filas):
+    output_buffer[i,:] = data[i*chunk:(i+1)*chunk,0]
+    
+#data_vec = np.reshape(output_buffer,output_buffer.shape[0]*output_buffer.shape[1])
+#plt.plot(data[:,0])
+#plt.plot(data_vec)
+
+
+output_buffer.astype(np.float32)
+
+p = pyaudio.PyAudio()
+stream_output = p.open(format=pyaudio.paFloat32,
+                channels = 1,
+                rate = fs,
+                output = True,                  
+)  
+
+
+stream_output.start_stream()
+i = 0
+while i < output_buffer.shape[0]:
+    
+    stream_output.write(output_buffer[i,:])
+    
+    i = i+1
+
+stream_output.stop_stream() 
+stream_output.close()
+p.terminate()   
+
+######################
+
+
+import pyaudio
+import wave
+import sys
+
+CHUNK = 1024
+
+
+wf = wave.open('Pink - Floyd.wav', 'rb')
+
+p = pyaudio.PyAudio()
+
+stream = p.open(format=p.get_format_from_width(wf.getsampwidth()),
+                channels=wf.getnchannels(),
+                rate=wf.getframerate(),
+                output=True)
+
+data = wf.readframes(CHUNK)
+
+while data != '':
+    stream.write(data)
+    data = wf.readframes(CHUNK)
+
+stream.stop_stream()
+stream.close()
+
+p.terminate()
 
 
 #%%
