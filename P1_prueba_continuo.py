@@ -91,17 +91,17 @@ from scipy.io import wavfile
 fs, data = wavfile.read('Pink - Floyd.wav')
 
 
-chunk = 1024
-filas = 5000
+chunk = 44100*5
+filas = 10
 output_channels = 1
 output_buffer = np.zeros([filas,chunk],dtype=np.float32)
 
 for i in range(filas):
     output_buffer[i,:] = data[i*chunk:(i+1)*chunk,0]
     
-#data_vec = np.reshape(output_buffer,output_buffer.shape[0]*output_buffer.shape[1])
-#plt.plot(data[:,0])
-#plt.plot(data_vec)
+data_vec = np.reshape(output_buffer,output_buffer.shape[0]*output_buffer.shape[1])
+plt.plot(data[:,0])
+plt.plot(data_vec)
 
 
 output_buffer.astype(np.float32)
