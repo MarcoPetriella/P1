@@ -428,7 +428,7 @@ def play_rec_continuo(fs,frames_per_buffer,chunks_buffer,callback,callback_varia
         while producer_exit[0] is False:
             
             semaphore2.acquire()            
-            #stream_output.write(output_buffer[i,:])
+            stream_output.write(output_buffer[i,:])
             
             i = i+1
             i = i%chunks_output_buffer     
@@ -527,6 +527,8 @@ def play_rec_continuo(fs,frames_per_buffer,chunks_buffer,callback,callback_varia
     p.terminate()   
         
     return input_buffer, output_buffer
+
+
 
 
 

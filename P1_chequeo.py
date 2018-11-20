@@ -40,14 +40,14 @@ pylab.rcParams.update(params)
     
 
 # Genero matriz de señales: ejemplo de barrido en frecuencias en el canal 0
-fs = int(44100*8)
-duracion = 0.5
+fs = int(44100)
+duracion = 10
 muestras = int(fs*duracion)
 input_channels = 2
 output_channels = 2
 amplitud = 0.1
-frec_ini = 200
-frec_fin = 200
+frec_ini = 44
+frec_fin = 44
 pasos = 1
 delta_frec = (frec_fin-frec_ini)/(pasos+1)
 data_out = np.zeros([pasos,muestras,output_channels])

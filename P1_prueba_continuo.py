@@ -91,8 +91,8 @@ from scipy.io import wavfile
 fs, data = wavfile.read('Pink - Floyd.wav')
 
 
-chunk = 44100*5
-filas = 10
+chunk = 1024
+filas = 10000
 output_channels = 1
 output_buffer = np.zeros([filas,chunk],dtype=np.float32)
 
@@ -105,6 +105,7 @@ plt.plot(data_vec)
 
 
 output_buffer.astype(np.float32)
+output_buffer = output_buffer/output_buffer.max()
 
 p = pyaudio.PyAudio()
 stream_output = p.open(format=pyaudio.paFloat32,
@@ -137,6 +138,8 @@ CHUNK = 1024
 
 
 wf = wave.open('Pink - Floyd.wav', 'rb')
+data = wf.readframes(CHUNK)
+
 
 p = pyaudio.PyAudio()
 
@@ -145,7 +148,6 @@ stream = p.open(format=p.get_format_from_width(wf.getsampwidth()),
                 rate=wf.getframerate(),
                 output=True)
 
-data = wf.readframes(CHUNK)
 
 while data != '':
     stream.write(data)
@@ -155,6 +157,69 @@ stream.stop_stream()
 stream.close()
 
 p.terminate()
+
+###########################
+#%%
+import wave
+import struct
+import array
+from scipy.io import wavfile
+import numpy as np
+
+
+fs, data = wavfile.read('Pink - Floyd.wav')
+data1 = data[:,0]
+
+chunk = 4
+filas = 1000000
+#
+#output_channels = 1
+#output_buffer = np.zeros([filas,chunk],dtype=np.float32)
+#for i in range(filas):
+#    output_buffer[i,:] = data[i*chunk:(i+1)*chunk,0]
+#    
+#data_vec = np.reshape(output_buffer,output_buffer.shape[0]*output_buffer.shape[1])
+#plt.plot(data[:,0])
+#plt.plot(data_vec)
+#output_buffer.astype(np.float32)
+#output_buffer = output_buffer/output_buffer.max()
+
+a = struct.pack('h' * len(data1), *data1)
+
+
+aa = []
+for i in range(filas):
+    a = struct.pack('h' * len(data1[i*chunk:(i+1)*chunk]), *data1[i*chunk:(i+1)*chunk])
+    aa.append(a)
+
+#b = struct.pack('h' * len(data1[0:chunk]), *data1[0:chunk])
+#i = 10
+#aa[100] = b
+
+
+p = pyaudio.PyAudio()
+
+p = pyaudio.PyAudio()
+stream_output = p.open(format=8,
+                channels = 1,
+                rate = fs,
+                output = True,                  
+)  
+
+
+stream_output.start_stream()
+i = 0
+while i < filas:
+    
+    stream_output.write(aa[i])
+    
+    
+    i = i+1
+
+stream_output.stop_stream() 
+stream_output.close()
+p.terminate()   
+
 
 
 #%%
@@ -202,5 +267,54 @@ stream_output.stop_stream()
 stream_output.close()
 p.terminate() 
 
+
+
+
+
+#%%
+
+dato_np = np.int16
+dato_pyaudio = pyaudio.paInt16   
+input_channels = 1
+frames_per_input_buffer = 4
+
+chunks_input_buffer1 = 100
+
+p = pyaudio.PyAudio()
+
+# Defino el stream del microfono
+stream_input = p.open(format = dato_pyaudio,
+                channels = input_channels,
+                rate = fs,
+                input = True,
+                frames_per_buffer = frames_per_input_buffer,
+)
+
+
+data_i = []
+for i in range(chunks_input_buffer1):
+    print(i)
+    stream_input.start_stream()
+    data_i.append(stream_input.read(frames_per_input_buffer))
+    stream_input.stop_stream()      
+
+
+stream_input.close()
+p.terminate()   
+
+
 #%%
 plt.plot(todo_out)
+
+
+
+
+
+
+
+#%%
+
+a = [15]
+b = struct.pack('h' * len(a), *a)
+c = -b
+d = np.frombuffer(c, dtype=np.int16) 
